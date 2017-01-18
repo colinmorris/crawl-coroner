@@ -21,9 +21,15 @@ BGS = [bg.lower() for bg in ('Fighter,Gladiator,Monk,Hunter,Assassin,Artificer,W
         + 'Summoner,Necromancer,Fire Elementalist,Ice Elementalist,Air Elementalist,'
         + 'Earth Elementalist,Venom Mage,'
         # Legacy
-        + 'Stalker,Priest,Healer,Paladin,Death Knight').split(',')]
+        + 'Jester,Stalker,Priest,Healer,Paladin,Death Knight').split(',')]
 
 STRICT_BG_CHECK = 0
+ROW_LIMIT = 0
+
+# Running this over gbs of logs takes a while. It kind of sucks to lose all progress
+# after 20 minutes because of a trivial error. If this is true, just print unhandled
+# exception traces and continue
+SOFT_ERRORS = 1
 
 MAX_UNSUPPORTED_VERSION = StrictVersion('0.9')
 
@@ -31,6 +37,9 @@ class VersionException(Exception):
     pass
 
 class OldVersionException(Exception):
+    pass
+
+class ChunkExhaustionException(Exception):
     pass
 
 class Morgue(object):
@@ -67,7 +76,7 @@ class Morgue(object):
 
         lines = self.next_chunk()
         match = re.match('(?P<score>\d+) (?P<name>[^ ]*) .*\(level (?P<level>\d+),', lines[0])
-        assert match, lines[0] 
+        assert match, "Couldn't find score/name/level in line: " + lines[0] 
         d = match.groupdict()
         self.setcol('score', int(d['score']))
         self.setcol('level', int(d['level']))
@@ -112,6 +121,7 @@ class Morgue(object):
             if (line == 'safely got out of the dungeon.'
                     or line == 'got out of the dungeon alive.'
                     or line.startswith('quit the game')
+                    or line == 'got out of the dungeon'
                 ):
                 won = False
                 break
@@ -134,7 +144,16 @@ class Morgue(object):
         lines = self.next_chunk()
         godline = lines[1]
         parts = godline.split()
-        gindex = parts.index('god:') + 1
+        try:
+            gindex = parts.index('god:') + 1
+        # Weird spacing issues with big stats?
+        except ValueError:
+            for i, part in enumerate(parts):
+                if 'god:' in part:
+                    gindex = i + 1
+                    break
+            else:
+                raise Exception('Weird line: ' + godline)
         if gindex == len(parts):
             # there is no god
             god = None
@@ -191,6 +210,16 @@ class Morgue(object):
             portalstr = line[len(prefix):-1].replace(' and', ',')
             portals = portalstr.split(', ')
             for portal in portals:
+                try:
+                    # Sometimes get stuff like 'labyrinth (2 times)'
+                    # TODO: this is probably information I should record for the
+                    # purposes of some analyses, though I think it's a pretty 
+                    # rare phenomenon (is it even possible to get 2 of the same 
+                    # portal vault in one game in the current version?)
+                    paren = portal.index('(')
+                    portal = portal[:paren]
+                except ValueError:
+                    pass
                 self.setcol('visited_'+portal, True)
 
 
@@ -219,6 +248,11 @@ class Morgue(object):
         chunk = []
         while 1:
             line = self.f.readline()
+            if line == '':
+                if chunk:
+                    return chunk
+                else:
+                    raise ChunkExhaustionException()
             if line == '\n':
                 # The last call read until it encountered a blank line. But
                 # sometimes there's more than one consecutive blank line, which
@@ -231,18 +265,21 @@ class Morgue(object):
         return chunk
 
     def next_line(self):
-        line = self.f.readline()
-        assert line != '\n'
-        skip = self.f.readline() 
-        assert skip == '\n', 'Expected nothing, got {}'.format(skip)
-        return line.strip().lower()
+        while 1:
+            line = self.f.readline()
+            if line == '':
+                raise ChunkExhaustionException()
+            elif line == '\n':
+                continue
+            return line.strip().lower()
 
 if __name__ == '__main__':
     t0 = time.time()
     morgue_dir = sys.argv[1]
     rows = []
-    cols = []
     skips = Counter()
+    niters = 0
+    done = False
     for parent, _, fnames in os.walk(morgue_dir):
         for fname in fnames:
             if not fname.endswith('.txt') or not fname.startswith('morgue'):
@@ -259,8 +296,20 @@ if __name__ == '__main__':
                 except Exception as e:
                     print "Unhandled exception in file {}. Version={}".format(e.fname, e.version)
                     print "Original trace: {}".format(e.trace)
-                    raise e
+                    if not SOFT_ERRORS:
+                        raise e
+                    skips['unexpected'] += 1
+                    continue
                 rows.append(morg.m)
+                niters += 1
+                if (niters % 1000) == 0:
+                    print 'i={} '.format(niters),
+
+                if (ROW_LIMIT and niters >= ROW_LIMIT):
+                    done = True
+                    break
+        if done:
+            break
 
     frame = pd.DataFrame(rows)
     f = frame
