@@ -7,21 +7,21 @@ from collections import Counter
 import time
 import traceback
 
-SPECIES = ('Human,High Elf,Deep Elf,Deep Dwarf,Hill Orc,Halfling,Kobold,Spriggan,Ogre,Troll,Naga,'
+SPECIES = [sp.lower() for sp in ('Human,High Elf,Deep Elf,Deep Dwarf,Hill Orc,Halfling,Kobold,Spriggan,Ogre,Troll,Naga,'
         + 'Centaur,Merfolk,Minotaur,Tengu,Draconian,Gargoyle,Formicid,Vine Stalker,Demigod,Demonspawn,'
         + 'Mummy,Ghoul,Vampire,Felid,Octopode,'
         + 'Black Draconian,Purple Draconian,Green Draconian,Yellow Draconian,Red Draconian,'
         + 'Mottled Draconian,White Draconian,Grey Draconian,Pale Draconian,'
         # Legacy/in development (wtf is a Grotesk?)
         + 'Mountain Dwarf,Djinni,Lava Orc,Sludge Elf,Barachian,Kenku,Grotesk'
-        ).split(',')
+        ).split(',')]
 
-BGS = ('Fighter,Gladiator,Monk,Hunter,Assassin,Artificer,Wanderer,Berserker,Abyssal Knight,'
+BGS = [bg.lower() for bg in ('Fighter,Gladiator,Monk,Hunter,Assassin,Artificer,Wanderer,Berserker,Abyssal Knight,'
         + 'Chaos Knight,Skald,Transmuter,Warper,Arcane Marksman,Enchanter,Wizard,Conjurer,'
         + 'Summoner,Necromancer,Fire Elementalist,Ice Elementalist,Air Elementalist,'
         + 'Earth Elementalist,Venom Mage,'
         # Legacy
-        + 'Stalker,Priest,Healer,Paladin,Death Knight').split(',')
+        + 'Stalker,Priest,Healer,Paladin,Death Knight').split(',')]
 
 STRICT_BG_CHECK = 0
 
@@ -72,7 +72,7 @@ class Morgue(object):
         self.setcol('score', int(d['score']))
         self.setcol('level', int(d['level']))
 
-        match = re.match('\s*Began as an? (.*) on', lines[1])
+        match = re.match('began as an? (.*) on', lines[1])
         assert match, lines[1]
         combo = match.group(1)
         parts = combo.split()
@@ -95,22 +95,51 @@ class Morgue(object):
         self.setcol('species', sp)
         self.setcol('bg', bg)
 
-        outcome = lines[3]
-        won = outcome.strip().lower().startswith('escaped with the orb')
-        self.setcol('won', won)
+        # Seems to be some inconsistency in which lines appear where in this
+        # blob. May get a line about god worshipped, if there was one, 
+        # inconsistent info on timing/duration, and possibly some hard wrapping
+        # We want to muddle our way through this and eventually find out whether
+        # this character won or died, and where they died
+        i = 2
+        won = None
+        wheredied = None
+        while i < len(lines):
+            line = lines[i]
+            i += 1
+            if line.startswith('escaped with the orb'):
+                won = True
+                break
+            if (line == 'safely got out of the dungeon.'
+                    or line == 'got out of the dungeon alive.'
+                    or line.startswith('quit the game')
+                ):
+                won = False
+                break
+            r = ('\.\.\. (in|on level (?P<lvl>\d+) of) ((the|a|an) )?'
+                    +'(?P<branch>.*?)( on .*)?.$')
+            m = re.match(r, line)
+            m1 = re.match('\.\.\. on level (\d+) of (?:(?:the|a) )?(.*).$', line)
+            m2 = re.match('\.\.\. in (?:a|an|the) (.*) on ', line)
+            m3 = re.match('\.\.\. in (?:(?:a|an|the) )?(.*)\.$', line)
+            if m:
+                wheredied = m.group('branch')
+                won = False
+                break
 
-        # TODO: Death place
+        assert won is not None, "Couldn't figure out whether they won: {}".format(lines)
+        self.setcol('won', won)
+        self.setcol('wheredied', wheredied)
 
         self.next_chunk()
         lines = self.next_chunk()
         godline = lines[1]
         parts = godline.split()
-        gindex = parts.index('God:') + 1
+        gindex = parts.index('god:') + 1
         if gindex == len(parts):
             # there is no god
             god = None
         # Xom formatting is a bit wonky
-        elif parts[0] == 'Xom':
+        elif parts[0] == 'xom':
             god = parts[0]
         elif gindex == len(parts) - 1: # Special case for gozag, who doesn't have piety
             god = parts[gindex]
@@ -130,17 +159,40 @@ class Morgue(object):
         statuses = lines[0]
         # TODO: handle statuses
         # TODO: introduces columns with mostly missing values. Problem?
-        # TODO: should probably tell pandas to replace missing values
-        # of rune_foo with False, nrunes with 0, skill_foo with 0.0, etc.
-        for line in lines:
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            i += 1
             if line.startswith('}:'):
+                # wrapping. This is gonna be a recurring problem.
+                if line.endswith(','):
+                    line += ' ' + lines[i]
+                    i += 1
                 match = re.match(r'}: (\d+)/15 runes: (.*)$', line)
                 n, runestr = match.groups()
-                self.setcol('nrunes', n)
+                self.setcol('nrunes', int(n))
                 runes = [rune.strip() for rune in runestr.split(',')]
                 for rune in runes:
+                    assert rune
                     self.setcol('rune_{}'.format(rune), True)
                 break
+
+        # You were in the dungeon, you worshipped X, you were hungry, etc.
+        youwere = self.next_chunk()
+
+        visited = self.next_chunk()
+        for line in visited:
+            # Maybe this should have been done in next_chunk. Probably too late now.
+            line = line.strip().lower()
+            prefix = 'you also visited: '
+            if not line.startswith(prefix):
+                continue
+            # Skip the last char, which is a period.
+            portalstr = line[len(prefix):-1].replace(' and', ',')
+            portals = portalstr.split(', ')
+            for portal in portals:
+                self.setcol('visited_'+portal, True)
+
 
         # Parse skill levels
         # It seems like a nice idea to have some kind of series/dataframe nested
@@ -149,14 +201,18 @@ class Morgue(object):
         # it seems like that's something that's not really well-supported by pandas?
         while 1:
             chunk = self.next_chunk()
-            if chunk[0].strip() == 'Skills:':
+            if chunk[0] == 'skills:':
                 break
         for skill_line in chunk[1:]:
-            match = re.search('Level (\d+\.?\d?)', skill_line)
+            match = re.search('level (\d+\.?\d?)', skill_line)
             assert match, skill_line
             lvl = float(match.group(1))
+            skill_start = 2
             parts = skill_line.split()
-            skill_name = ' '.join(parts[3:]) # brittle
+            while not parts[skill_start].isalpha():
+                skill_start += 1
+            skill_name = ' '.join(parts[skill_start:])
+            assert skill_name
             self.setcol('skill_'+skill_name, lvl)
 
     def next_chunk(self):
@@ -171,7 +227,7 @@ class Morgue(object):
                     continue
                 else:
                     break
-            chunk.append(line)
+            chunk.append(line.strip().lower())
         return chunk
 
     def next_line(self):
@@ -179,7 +235,7 @@ class Morgue(object):
         assert line != '\n'
         skip = self.f.readline() 
         assert skip == '\n', 'Expected nothing, got {}'.format(skip)
-        return line
+        return line.strip().lower()
 
 if __name__ == '__main__':
     t0 = time.time()
@@ -207,23 +263,37 @@ if __name__ == '__main__':
                 rows.append(morg.m)
 
     frame = pd.DataFrame(rows)
+    f = frame
     frame['nrunes'].fillna(0, inplace=1)
     for col in frame.columns:
         if col.startswith('rune_'):
             frame[col].fillna(False, inplace=1)
         elif col.startswith('skill_'):
             frame[col].fillna(0.0, inplace=1)
+        elif col.startswith('visited_'):
+            frame[col].fillna(False, inplace=1)
+        elif col in ['bg', 'god', 'species', 'wheredied']:
+            frame[col] = frame[col].astype('category')
 
     print "Finished after {:.0f} seconds".format(time.time()-t0)
 
     DEBUG = 1
     if DEBUG:
         print "Skips: {}".format(skips)
-        for col in ['god', 'bg', 'species', 'version']:
+        for col in ['god', 'bg', 'species', 'version', 'wheredied']:
             print col
             print frame[col].unique()
             print
 
         print "n = {}".format(len(frame))
 
+    def save(df, fname='morgue.h5'):
+        with pd.HDFStore(fname) as store:
+            # For some reason the format=table thing is necessary if using 
+            # categorical vars. I don't really understand this.
+            store.put('m', df, format='table')
+
+    SAVE = 1
+    if SAVE:
+        save(frame)
 
