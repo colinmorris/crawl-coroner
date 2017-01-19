@@ -7,23 +7,27 @@ from collections import Counter
 import time
 import traceback
 
-SPECIES = [sp.lower() for sp in ('Human,High Elf,Deep Elf,Deep Dwarf,Hill Orc,Halfling,Kobold,Spriggan,Ogre,Troll,Naga,'
+SPECIES = set([sp.lower() for sp in ('Human,High Elf,Deep Elf,Deep Dwarf,Hill Orc,Halfling,Kobold,Spriggan,Ogre,Troll,Naga,'
         + 'Centaur,Merfolk,Minotaur,Tengu,Draconian,Gargoyle,Formicid,Vine Stalker,Demigod,Demonspawn,'
         + 'Mummy,Ghoul,Vampire,Felid,Octopode,'
         + 'Black Draconian,Purple Draconian,Green Draconian,Yellow Draconian,Red Draconian,'
         + 'Mottled Draconian,White Draconian,Grey Draconian,Pale Draconian,'
         # Legacy/in development (wtf is a Grotesk?)
         + 'Mountain Dwarf,Djinni,Lava Orc,Sludge Elf,Barachian,Kenku,Grotesk'
-        ).split(',')]
+        ).split(',')])
 
-BGS = [bg.lower() for bg in ('Fighter,Gladiator,Monk,Hunter,Assassin,Artificer,Wanderer,Berserker,Abyssal Knight,'
+BGS = set([bg.lower() for bg in ('Fighter,Gladiator,Monk,Hunter,Assassin,Artificer,Wanderer,Berserker,Abyssal Knight,'
         + 'Chaos Knight,Skald,Transmuter,Warper,Arcane Marksman,Enchanter,Wizard,Conjurer,'
         + 'Summoner,Necromancer,Fire Elementalist,Ice Elementalist,Air Elementalist,'
         + 'Earth Elementalist,Venom Mage,'
         # Legacy
-        + 'Jester,Stalker,Priest,Healer,Paladin,Death Knight').split(',')]
+        + 'Jester,Stalker,Priest,Healer,Paladin,Death Knight').split(',')])
 
-STRICT_BG_CHECK = 0
+# dithmengos is borderline, and ukayaw
+GODS = set(('ashenzari,beogh,cheibriados,dithmenos,elyvilon,fedhas,gozag,hepliaklqana,jiyva,kikubaaqudgha,lugonu,makhleb,nemelex xobeh,okawaru,pakellas,qazlal,ru,sif muna,the shining one,trog,uskayaw,vehumet,xom,yredelemnul,zin').split(','))
+
+# Inaccurately named now
+STRICT_BG_CHECK = 1
 ROW_LIMIT = 0
 
 # Running this over gbs of logs takes a while. It kind of sucks to lose all progress
@@ -72,7 +76,7 @@ class Morgue(object):
         v = match.group()
         if StrictVersion(v) <= MAX_UNSUPPORTED_VERSION:
             raise OldVersionException()
-        self.setcol('version', v)
+        self.setcol('version', float(v))
 
         lines = self.next_chunk()
         match = re.match('(?P<score>\d+) (?P<name>[^ ]*) .*\(level (?P<level>\d+),', lines[0])
@@ -128,9 +132,6 @@ class Morgue(object):
             r = ('\.\.\. (in|on level (?P<lvl>\d+) of) ((the|a|an) )?'
                     +'(?P<branch>.*?)( on .*)?.$')
             m = re.match(r, line)
-            m1 = re.match('\.\.\. on level (\d+) of (?:(?:the|a) )?(.*).$', line)
-            m2 = re.match('\.\.\. in (?:a|an|the) (.*) on ', line)
-            m3 = re.match('\.\.\. in (?:(?:a|an|the) )?(.*)\.$', line)
             if m:
                 wheredied = m.group('branch')
                 won = False
@@ -156,20 +157,21 @@ class Morgue(object):
                 raise Exception('Weird line: ' + godline)
         if gindex == len(parts):
             # there is no god
-            god = None
+            god = 'none'
         # Xom formatting is a bit wonky
-        elif parts[0] == 'xom':
-            god = parts[0]
+        elif parts[0] in ('xom', '*xom'):
+            god = 'xom'
         elif gindex == len(parts) - 1: # Special case for gozag, who doesn't have piety
             god = parts[gindex]
         else:
             god = ' '.join(parts[gindex:-1])
             assert god, godline
         # Sometimes we'll get a string like '*Zin', meaning worshipping Zin but under penance
-        if god and god[0] == '*':
+        if god[0] == '*':
             god = ' '.join(parts[gindex:])[1:]
         # Apparently some inconsistency in case for TSO
-        god = god and god.lower()
+        god = god.lower()
+        assert god == 'none' or god in GODS, 'Unrecognized god: {}'.format(god)
         self.setcol('god', god)
 
         percent = self.next_chunk()
@@ -220,7 +222,7 @@ class Morgue(object):
                     portal = portal[:paren]
                 except ValueError:
                     pass
-                self.setcol('visited_'+portal, True)
+                self.setcol('visited_'+portal.strip(), True)
 
 
         # Parse skill levels
