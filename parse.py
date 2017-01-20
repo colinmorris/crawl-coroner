@@ -6,30 +6,7 @@ from distutils.version import StrictVersion
 from collections import Counter
 import time
 import traceback
-
-SPECIES = set([sp.lower() for sp in ('Human,High Elf,Deep Elf,Deep Dwarf,Hill Orc,Halfling,Kobold,Spriggan,Ogre,Troll,Naga,'
-        + 'Centaur,Merfolk,Minotaur,Tengu,Draconian,Gargoyle,Formicid,Vine Stalker,Demigod,Demonspawn,'
-        + 'Mummy,Ghoul,Vampire,Felid,Octopode,'
-        + 'Black Draconian,Purple Draconian,Green Draconian,Yellow Draconian,Red Draconian,'
-        + 'Mottled Draconian,White Draconian,Grey Draconian,Pale Draconian,'
-        # Legacy/in development (wtf is a Grotesk?)
-        + 'Mountain Dwarf,Djinni,Lava Orc,Sludge Elf,Barachian,Kenku,Grotesk'
-        ).split(',')])
-
-BGS = set([bg.lower() for bg in ('Fighter,Gladiator,Monk,Hunter,Assassin,Artificer,Wanderer,Berserker,Abyssal Knight,'
-        + 'Chaos Knight,Skald,Transmuter,Warper,Arcane Marksman,Enchanter,Wizard,Conjurer,'
-        + 'Summoner,Necromancer,Fire Elementalist,Ice Elementalist,Air Elementalist,'
-        + 'Earth Elementalist,Venom Mage,'
-        # Legacy
-        + 'Jester,Stalker,Priest,Healer,Paladin,Death Knight').split(',')])
-
-# dithmengos is borderline, and ukayaw
-GODS = set(('ashenzari,beogh,cheibriados,dithmenos,elyvilon,fedhas,gozag,hepliaklqana,jiyva,kikubaaqudgha,lugonu,makhleb,nemelex xobeh,okawaru,pakellas,qazlal,ru,sif muna,the shining one,trog,uskayaw,vehumet,xom,yredelemnul,zin').split(','))
-
-# Skipping dungeon, hells, because they're probably not useful for the kind of
-# analysis I'm planning to do with this information
-BRANCHES = set(('temple,lair,shoals,snake,slime,orc,elf,vaults,swamp,spider'
-    + ',depths,tomb,zot,crypt').split(','))
+from crawl_data import SPECIES, BGS, GODS, BRANCHES
 
 # Inaccurately named now
 STRICT_BG_CHECK = 1
@@ -55,6 +32,8 @@ class MinigameException(Exception):
     pass
 
 class Morgue(object):
+    # Keep track of seen bots so we can save them to a file at the end for later use
+    bots = set()
     def __init__(self, f):
         self.f = f
         # The core morgue data structure. Used for simple scalar columns.
@@ -82,6 +61,8 @@ class Morgue(object):
         match = re.match('(?P<score>\d+) (?P<name>[^ ]*) .*\(level (?P<level>\d+),', lines[0])
         assert match, "Couldn't find score/name/level in line: " + lines[0] 
         d = match.groupdict()
+        # Save player name for future logging
+        self.name = d['name']
         self.setcol('score', int(d['score']))
         self.setcol('level', int(d['level']))
 
@@ -185,7 +166,8 @@ class Morgue(object):
                 howdied = 'asphyxiated'
             elif line == 'drowned' or line == 'took a swim in molten lava':
                 howdied = 'drowned'
-            elif line == 'forgot to exist' or line == 'slipped on a banana peel':
+            elif (line == 'forgot to exist' or line == 'slipped on a banana peel'
+                    or line == 'forgot to breathe'):
                 howdied = 'statdeath'
 
 
@@ -303,6 +285,7 @@ class Morgue(object):
         youwere = self.next_chunk()
 
         visited = self.next_chunk()
+        assert visited[0].startswith('you visited'), 'Bad visit chunk. First line: {}'.format(visited[0])
         for line in visited:
             # Maybe this should have been done in next_chunk. Probably too late now.
             line = line.strip().lower()
@@ -326,15 +309,33 @@ class Morgue(object):
                 self.setcol('visited_'+portal.strip(), True)
 
 
+        # Originally relied on fixed ordering of chunks, but it turns out there's
+        # some variation between versions, so just scan for known chunk headers
+        # anywhere
+        header_to_method = {
+                'skills:': self.parse_skills,
+                'branches:': self.parse_branches,
+                'notes': self.parse_notes,
+        }
+        sought = prefix_to_method.keys()
+        while sought:
+            try:
+                chunk = self.next_chunk()
+            except ChunkExhaustionException as e:
+                e.message = 'Traversed whole file without finding headers: {}'.format(sought)
+                raise e
+            header = chunk[0]
+            if header in sought:
+                header_to_method[header](chunk)
+                sought.remove(header)
+        
+        
+    def parse_skills(self, chunk):
         # Parse skill levels
         # It seems like a nice idea to have some kind of series/dataframe nested
         # inside the main one for stuff like runes, skills, spells, etc. (if only
         # for the sake of tidiness and not having to do ersatz namespacing), but 
         # it seems like that's something that's not really well-supported by pandas?
-        while 1:
-            chunk = self.next_chunk()
-            if chunk[0] == 'skills:':
-                break
         for skill_line in chunk[1:]:
             match = re.search('level (\d+\.?\d?)', skill_line)
             assert match, skill_line
@@ -347,15 +348,7 @@ class Morgue(object):
             assert skill_name, skill_line
             self.setcol('skill_'+skill_name, lvl)
 
-        # All these horrible 'while 1' loops with breaks make me really wish
-        # that python had a do...while construct. Oh well.
-        while 1:
-            chunk = self.next_chunk()
-            if chunk[0].startswith('dungeon overview'):
-                # Branches chunk
-                chunk = self.next_chunk()
-                break
-        assert chunk[0] == 'branches:', 'Unexpected header: ' + chunk[0]
+    def parse_branches(self, chunk):
         blob = ' '.join(chunk[1:])
         tokens = blob.split()
         i = 0
@@ -374,9 +367,30 @@ class Morgue(object):
             # entrance, they get something like 'Vaults: D:13-D14'
             if w[0] == '(':
                 self.setcol('saw_'+branch, True)
+
+
+    def parse_notes(self, chunk):
+        # elliptic's qw bot (which I think is the only one really in use, or 
+        # at least the most popular), leaves some telltale marks in the notes
+        # section. 
+        # Can probably get away with just checking first 10 notes or so (in fact,
+        # I'm pretty sure it's guaranteed to put a note like '0 ||| counter = 303'
+        # in the third note every time)
+        bot = False
+        for noteline in chunk[3:13]:
+            if re.search(' \d+ \|\|\| ', noteline):
+                bot = True
+                self.bots.add(self.name)
+                break
+        self.setcol('bot', bot)
+        if not bot and self.name in self.bots:
+            print "WARNING: {} was in list of known bots, but seemed not to be botting this game: {}".format(self.f.name)
             
 
     def next_chunk(self):
+        """Return the next "chunk" in this morgue file - i.e. the next non-blank
+        line and all lines after it until the next blank line - as a list of strings 
+        (which we strip and lowercase before returning)"""
         chunk = []
         while 1:
             line = self.f.readline()
@@ -397,6 +411,7 @@ class Morgue(object):
         return chunk
 
     def next_line(self):
+        """Return the next non-blank line, stripped and lowercased."""
         while 1:
             line = self.f.readline()
             if line == '':
@@ -459,7 +474,7 @@ if __name__ == '__main__':
             frame[col].fillna(False, inplace=1)
         elif col.startswith('skill_'):
             frame[col].fillna(0.0, inplace=1)
-        elif col in ['bg', 'god', 'species', 'wheredied']:
+        elif col in ['bg', 'god', 'species', 'wheredied', 'howdied']:
             frame[col] = frame[col].astype('category')
 
     non_null_cols = ['bg', 'god', 'level', 'nrunes', 'species', 'time', 'turns',
@@ -467,6 +482,12 @@ if __name__ == '__main__':
     for col in non_null_cols:
         if f[col].count() != len(f):
             print 'Got unexpected null values in column {}'.format(col)
+
+    # Object columns are bad news in terms of memory usage.
+    for col in frame.columns:
+        if frame[col].dtype.name == 'object':
+            print "~~~ WARNING ~~~: Column {} has object type. Are you sure " \
+                    "you wouldn't rather use a category?".format(col)
 
     print "Finished after {:.0f} seconds".format(time.time()-t0)
 
@@ -489,4 +510,7 @@ if __name__ == '__main__':
     SAVE = 1
     if SAVE:
         save(frame)
+
+    with open('known_bots.txt', 'w') as f:
+        f.write('\n'.join(list(Morgue.bots)) + '\n')
 
