@@ -26,6 +26,11 @@ BGS = set([bg.lower() for bg in ('Fighter,Gladiator,Monk,Hunter,Assassin,Artific
 # dithmengos is borderline, and ukayaw
 GODS = set(('ashenzari,beogh,cheibriados,dithmenos,elyvilon,fedhas,gozag,hepliaklqana,jiyva,kikubaaqudgha,lugonu,makhleb,nemelex xobeh,okawaru,pakellas,qazlal,ru,sif muna,the shining one,trog,uskayaw,vehumet,xom,yredelemnul,zin').split(','))
 
+# Skipping dungeon, hells, because they're probably not useful for the kind of
+# analysis I'm planning to do with this information
+BRANCHES = set(('temple,lair,shoals,snake,slime,orc,elf,vaults,swamp,spider'
+    + ',depths,tomb,zot,crypt').split(','))
+
 # Inaccurately named now
 STRICT_BG_CHECK = 1
 ROW_LIMIT = 0
@@ -44,6 +49,9 @@ class OldVersionException(Exception):
     pass
 
 class ChunkExhaustionException(Exception):
+    pass
+
+class MinigameException(Exception):
     pass
 
 class Morgue(object):
@@ -66,19 +74,11 @@ class Morgue(object):
         # I thought I needed to inject some behaviour here, but turns out I don't.
         self.m[col] = value
 
-    def parse(self):
-        l = self.next_line()
-        vstring = l.split()[5]
-        # Simplifying(?)
-        match = re.match('\d\.\d+', vstring)
-        if not match:
-            raise VersionException(vstring)
-        v = match.group()
-        if StrictVersion(v) <= MAX_UNSUPPORTED_VERSION:
-            raise OldVersionException()
-        self.setcol('version', float(v))
-
-        lines = self.next_chunk()
+    def parse_summary(self, lines):
+        """Parse the section at the top, after the version line.
+        Frodo the Vexing (level X)
+        began as a merfolk haberdasher
+        etc."""
         match = re.match('(?P<score>\d+) (?P<name>[^ ]*) .*\(level (?P<level>\d+),', lines[0])
         assert match, "Couldn't find score/name/level in line: " + lines[0] 
         d = match.groupdict()
@@ -116,6 +116,7 @@ class Morgue(object):
         i = 2
         won = None
         wheredied = None
+        howdied = None
         while i < len(lines):
             line = lines[i]
             i += 1
@@ -127,8 +128,67 @@ class Morgue(object):
                     or line.startswith('quit the game')
                     or line == 'got out of the dungeon'
                 ):
+                howdied = 'quit'
                 won = False
                 break
+            # TODO :What is 'burnt to a crisp'?
+            # Man, there is a lot of variety in these messages. :(
+            # TODO: Killed from afar one not strictly correct. Could rarely be god wrath
+            # ('killed from afar by the fury of makhleb')
+            monster_death_prefixes = ['slain by', 'mangled by', 'shot with',
+                    'killed from afar', 'hit by', 'demolished by', 'annihilated by',
+                    # This one mostly appears in the context of 
+                    # 'Killed by X\n... invoked by Y' (smiting, pain)
+                    # Can also prefix miscasts (checked earlier), and some
+                    # other weird, rare stuff (killed by angry trees, killed by a
+                    # spatial distortion.
+                    'killed by',
+                    # This one is kinda weird. Maybe the result of too much draining
+                    # at a low level, exhausting all xp or something? v rare
+                    'was drained of all life',
+                    'drained of all life',
+                    'blown up by', 'splashed by', 'splashed with', 'drowned by',
+                    # How the hell?
+                    'thrown by',
+                    # Dying to a monster's poison is maybe not really worth
+                    # distinguishing from the general case of dying to a monster
+                    'succumbed to',
+                    'incinerated by',
+                    'impaled on', 'headbutted by', 'rolled over by'
+            ]
+            if line.startswith('killed by miscasting'):
+                howdied = 'miscast'
+            elif line == 'succumbed to poison (a potion of poison)':
+                howdied = 'suicide'
+            elif line.startswith('distortion unwield') or line.startswith('killed by distortion unwield'):
+                howdied = 'suicide'
+            # Above checks need to happen first, since they're subsumed by more
+            # generic monster death prefixes
+            elif (any(line.startswith(pre) for pre in monster_death_prefixes)
+                    ):
+                howdied = 'monster'
+            elif 'themsel' in line:
+                # This has the happy effect of setting the correct cause of death
+                # for "Killed by an exploding spore\n...Set off by themselves"
+                howdied = 'suicide'
+            elif line.startswith('rotted away'):
+                howdied = 'rot'
+            elif line.startswith('engulfed by'):
+                # Hacky approximation. If it originated from a monster, it'll
+                # be something like "Engulfed by a death drake's foul pestilence",
+                # or "an ice statue's freezing vapour", otherwise it'll just be
+                # something like "engulfed by a cloud of flame"
+                howdied = 'monster' if "'s" in line else 'cloud'
+            elif line.startswith('starved to death'):
+                howdied = 'starved'
+            elif line == 'asphyxiated':
+                howdied = 'asphyxiated'
+            elif line == 'drowned' or line == 'took a swim in molten lava':
+                howdied = 'drowned'
+            elif line == 'forgot to exist' or line == 'slipped on a banana peel':
+                howdied = 'statdeath'
+
+
             r = ('\.\.\. (in|on level (?P<lvl>\d+) of) ((the|a|an) )?'
                     +'(?P<branch>.*?)( on .*)?.$')
             m = re.match(r, line)
@@ -138,8 +198,49 @@ class Morgue(object):
                 break
 
         assert won is not None, "Couldn't figure out whether they won: {}".format(lines)
+        # This isn't a dealbreaker. We should just record a row with nan for howdied.
+        if not (won or howdied):
+            print "Warning: Couldn't determine cause of death for: {}".format(lines)
         self.setcol('won', won)
         self.setcol('wheredied', wheredied)
+        self.setcol('howdied', howdied)
+
+        timeline = lines[-1]
+        match = re.match('the game lasted (.*) \((\d+) turns?\)', timeline)
+        assert match, 'Unexpected line: {}'.format(timeline)
+        timestr, turns = match.groups()
+        parts = timestr.strip().split()
+        # '1day 11:22:33', or '1 day 11:22:33' or '11:22:33'
+        assert 1 <= len(parts) <= 3, timestr
+        if len(parts) == 2:
+            digits = [c for c in parts[0] if c.isdigit()]
+            days = int(''.join(digits))
+        elif len(parts) == 3:
+            days = int(parts[0])
+        else:
+            days = 0
+        hrs, mins, secs = map(int, parts[-1].split(':'))
+        total_seconds = secs + 60*mins + 60*60*hrs + 24*60*60*days
+        self.setcol('time', total_seconds)
+        self.setcol('turns', int(turns))
+
+
+    def parse(self):
+        l = self.next_line()
+        if not l.startswith('dungeon crawl stone soup version '):
+            # Won't match in case of sprint, zot defense, etc.
+            raise MinigameException()
+        vstring = l.split()[5]
+        # Simplifying(?)
+        match = re.match('\d\.\d+', vstring)
+        if not match:
+            raise VersionException(vstring)
+        v = match.group()
+        if StrictVersion(v) <= MAX_UNSUPPORTED_VERSION:
+            raise OldVersionException()
+        self.setcol('version', float(v))
+
+        self.parse_summary(self.next_chunk())
 
         self.next_chunk()
         lines = self.next_chunk()
@@ -194,7 +295,7 @@ class Morgue(object):
                 self.setcol('nrunes', int(n))
                 runes = [rune.strip() for rune in runestr.split(',')]
                 for rune in runes:
-                    assert rune
+                    assert rune, 'Got into a bad rune situation: {}'.format(lines)
                     self.setcol('rune_{}'.format(rune), True)
                 break
 
@@ -243,8 +344,37 @@ class Morgue(object):
             while not parts[skill_start].isalpha():
                 skill_start += 1
             skill_name = ' '.join(parts[skill_start:])
-            assert skill_name
+            assert skill_name, skill_line
             self.setcol('skill_'+skill_name, lvl)
+
+        # All these horrible 'while 1' loops with breaks make me really wish
+        # that python had a do...while construct. Oh well.
+        while 1:
+            chunk = self.next_chunk()
+            if chunk[0].startswith('dungeon overview'):
+                # Branches chunk
+                chunk = self.next_chunk()
+                break
+        assert chunk[0] == 'branches:', 'Unexpected header: ' + chunk[0]
+        blob = ' '.join(chunk[1:])
+        tokens = blob.split()
+        i = 0
+        # Looking around for substrings like 'Temple (1/1) D:7'
+        while i < len(tokens):
+            w = tokens[i]
+            i += 1
+            if w not in BRANCHES:
+                continue
+            branch = w
+            w = tokens[i]
+            i += 1
+            # I think this indicates the player has at least seen the entrance
+            # I think (0/X) means they haven't entered it. If they've been to
+            # the range of levels where it should appear, but haven't seen the
+            # entrance, they get something like 'Vaults: D:13-D14'
+            if w[0] == '(':
+                self.setcol('saw_'+branch, True)
+            
 
     def next_chunk(self):
         chunk = []
@@ -292,12 +422,19 @@ if __name__ == '__main__':
                 except VersionException as ve:
                     skips['vstring'] += 1
                     continue
+                except MinigameException as me:
+                    skips['minigame'] += 1
+                    continue
                 except OldVersionException as ove:
                     skips['old'] += 1
                     continue
                 except Exception as e:
-                    print "Unhandled exception in file {}. Version={}".format(e.fname, e.version)
-                    print "Original trace: {}".format(e.trace)
+                    print "Unhandled {} in file {}. Version={}".format(
+                            e.__class__.__name__, e.fname, e.version)
+                    if e.message:
+                        print e.message
+                    # Turning this off for now, cause it's a little verbose
+                    #print "Original trace: {}".format(e.trace)
                     if not SOFT_ERRORS:
                         raise e
                     skips['unexpected'] += 1
@@ -317,26 +454,31 @@ if __name__ == '__main__':
     f = frame
     frame['nrunes'].fillna(0, inplace=1)
     for col in frame.columns:
-        if col.startswith('rune_'):
+        boolean_prefixes = ['rune_', 'visited_', 'saw_']
+        if any(col.startswith(pre) for pre in boolean_prefixes):
             frame[col].fillna(False, inplace=1)
         elif col.startswith('skill_'):
             frame[col].fillna(0.0, inplace=1)
-        elif col.startswith('visited_'):
-            frame[col].fillna(False, inplace=1)
         elif col in ['bg', 'god', 'species', 'wheredied']:
             frame[col] = frame[col].astype('category')
 
+    non_null_cols = ['bg', 'god', 'level', 'nrunes', 'species', 'time', 'turns',
+            'version', 'won']
+    for col in non_null_cols:
+        if f[col].count() != len(f):
+            print 'Got unexpected null values in column {}'.format(col)
+
     print "Finished after {:.0f} seconds".format(time.time()-t0)
 
-    DEBUG = 1
+    print "Skips: {}".format(skips)
+    DEBUG = 0
     if DEBUG:
-        print "Skips: {}".format(skips)
         for col in ['god', 'bg', 'species', 'version', 'wheredied']:
             print col
             print frame[col].unique()
             print
 
-        print "n = {}".format(len(frame))
+    print "n = {}".format(len(frame))
 
     def save(df, fname='morgue.h5'):
         with pd.HDFStore(fname) as store:
