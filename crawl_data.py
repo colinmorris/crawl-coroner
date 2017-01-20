@@ -16,6 +16,8 @@ BGS = set([bg.lower() for bg in ('Fighter,Gladiator,Monk,Hunter,Assassin,Artific
         + 'Jester,Stalker,Priest,Healer,Paladin,Death Knight').split(',')])
 
 # dithmengos is borderline, and ukayaw
+# Actually, should probably add them back and filter them out from canonical frame
+# used for most analyses, like I'm doing with djinnis, jesters, stalkers, etc.
 GODS = set(('ashenzari,beogh,cheibriados,dithmenos,elyvilon,fedhas,gozag,hepliaklqana,jiyva,kikubaaqudgha,lugonu,makhleb,nemelex xobeh,okawaru,pakellas,qazlal,ru,sif muna,the shining one,trog,uskayaw,vehumet,xom,yredelemnul,zin').split(','))
 
 # Skipping dungeon, hells, because they're probably not useful for the kind of
