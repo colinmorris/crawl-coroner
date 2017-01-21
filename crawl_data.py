@@ -36,6 +36,9 @@ GROUPED_BGS = {
 for k,v in GROUPED_BGS.items():
     GROUPED_BGS[k] = v.split(',')
 
+
+# TODO: Distinguish removed vs. never-made-it-into-a-release
+REMOVED_SPECIES = set('mountain dwarf,sludge elf'.split())
 LEGACY_SPECIES = set('mountain dwarf,djinni,lava orc,sludge elf,barachian,kenku,grotesk'.split(','))
 
 LEGACY_BGS = set('jester,stalker,priest,healer,paladin,death knight'.split(','))

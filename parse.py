@@ -86,6 +86,9 @@ class Morgue(object):
                 raise e
             else:
                 print e.message
+        # Was renamed in 0.10
+        if sp == 'kenku':
+            sp = 'tengu'
         self.setcol('species', sp)
         self.setcol('bg', bg)
 
@@ -506,6 +509,7 @@ if __name__ == '__main__':
             # For some reason the format=table thing is necessary if using 
             # categorical vars. I don't really understand this.
             store.put('m', df, format='table')
+            store.put('mini', df.head(50000), format='table')
 
     SAVE = 1
     if SAVE:
