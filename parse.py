@@ -285,9 +285,12 @@ class Morgue(object):
                 break
 
         # You were in the dungeon, you worshipped X, you were hungry, etc.
-        youwere = self.next_chunk()
+        while 1:
+            chunk = self.next_chunk()
+            if chunk[0].startswith('you visited'):
+                break
 
-        visited = self.next_chunk()
+        visited = chunk
         assert visited[0].startswith('you visited'), 'Bad visit chunk. First line: {}'.format(visited[0])
         for line in visited:
             # Maybe this should have been done in next_chunk. Probably too late now.
@@ -320,7 +323,7 @@ class Morgue(object):
                 'branches:': self.parse_branches,
                 'notes': self.parse_notes,
         }
-        sought = prefix_to_method.keys()
+        sought = header_to_method.keys()
         while sought:
             try:
                 chunk = self.next_chunk()
@@ -430,6 +433,7 @@ if __name__ == '__main__':
     skips = Counter()
     niters = 0
     done = False
+    minigame_files = []
     for parent, _, fnames in os.walk(morgue_dir):
         for fname in fnames:
             if not fname.endswith('.txt') or not fname.startswith('morgue'):
@@ -442,6 +446,7 @@ if __name__ == '__main__':
                     continue
                 except MinigameException as me:
                     skips['minigame'] += 1
+                    minigame_files.append(f.name)
                     continue
                 except OldVersionException as ove:
                     skips['old'] += 1
@@ -518,3 +523,8 @@ if __name__ == '__main__':
     with open('known_bots.txt', 'w') as f:
         f.write('\n'.join(list(Morgue.bots)) + '\n')
 
+    if minigame_files:
+        fname = 'minigames.txt'
+        print "Writing {} minigame morgue paths to {}".format(len(minigame_files), fname)
+        with open(fname, 'w') as f:
+            f.write('\n'.join(minigame_files) + '\n')
