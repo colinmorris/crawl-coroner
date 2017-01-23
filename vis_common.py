@@ -1,25 +1,45 @@
 from load import load_frame
-from crawl_data import CANON_SPECIES, CANON_BGS
 from matplotlib import pyplot as plt
+import pandas as pd
+import gc
 
 # Use like 10% of the data. Useful for development/prototyping, cause the full dataset is getting biiiig.
-MINI = 1
+MINI = 0
 
-fr = load_frame(mini=MINI)
-raw = fr
-# TODO: Add some preprocessing here to filter out trivial games and bots
-f = fr[ fr['species'].isin(CANON_SPECIES) 
-        & fr['bg'].isin(CANON_BGS)
-        & (fr['bot'] == False)
-        # There's an argument to be made for making this more extreme and just excluding all quit games.
-        & (~ ( (fr['level'] == 1) & (fr['howdied'] == 'quit') ) )
-    ]
+MORGUE_FNAME = 'morgue.h5'
+STORE = pd.HDFStore(MORGUE_FNAME)
 
-# Stable of reusable/composable indices
-iwon = f['won'] == True
-ilost = f['won'] == False
-irecent = f['version'] > .16
-iquit = f['howdied']=='quit'
+# Columns with these prefixes won't be loaded unless explicitly asked for.
+# (Fitting the whole table into memory is becoming increasingly awkward, and
+# these columns - especially skills_ - account for a good majority of memory
+# usage.)
+OPTIONAL_COLUMN_PREFIXES = {'rune_', 'saw_', 'skill_', 'visited_'}
+COLUMNS = STORE['mini'].columns
+DEFAULT_COLUMNS = [col for col in COLUMNS 
+                    if not any(col.startswith(pre) for pre in OPTIONAL_COLUMN_PREFIXES)
+                  ]
+
+def load_frame(mini=MINI, raw=False, include=[]):
+    """Load a data frame of morgue data.
+        mini: if True, just load a miniature version, consisting of around 10% of all rows
+        raw: if False, filter out bot games, trivial games, and games with non-canonical species/bgs
+        include: a list of columns or column prefixes to include in addition to DEFAULT_COLUMNS
+    """
+    framekey = 'mini' if mini else 'm'
+    cols = DEFAULT_COLUMNS
+    for incl in include:
+        if incl in COLUMNS:
+            cols.append(incl)
+        elif incl in OPTIONAL_COLUMN_PREFIXES:
+            cols += [col for col in COLUMNS if col.startswith(incl)]
+        else:
+            raise ValueError("Unrecognized column spec: {}".format(incl))
+    fr = STORE.select(framekey, 'columns=cols')
+    if not raw:
+        fr = fr[STORE['icleaned']]
+    # It's ridiculous that I have to do this :/
+    gc.collect()
+    return fr
 
 def iall(*indices):
         return reduce(lambda x,y: x&y, indices)
