@@ -53,6 +53,19 @@ class Morgue(object):
         # I thought I needed to inject some behaviour here, but turns out I don't.
         self.m[col] = value
 
+    @staticmethod
+    def normalize_wheredied(wd):
+        if wd == 'tomb of the ancients':
+            return 'tomb'
+        if wd == "spider's nest":
+            return "spider nest"
+        if wd.startswith('level') and 'ziggurat' in wd:
+            return 'ziggurat'
+        if wd.startswith('ecumenical temple'):
+            # Sometimes see "ecumenical temple (autumnal temple)". No idea.
+            return = 'ecumenical temple'
+        return wd
+
     def parse_summary(self, lines):
         """Parse the section at the top, after the version line.
         Frodo the Vexing (level X)
@@ -187,7 +200,7 @@ class Morgue(object):
         if not (won or howdied):
             print "Warning: Couldn't determine cause of death for: {}".format(lines)
         self.setcol('won', won)
-        self.setcol('wheredied', wheredied)
+        self.setcol('wheredied', self.normalize_wheredied(wheredied))
         self.setcol('howdied', howdied)
 
         timeline = lines[-1]
