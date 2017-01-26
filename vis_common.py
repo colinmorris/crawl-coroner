@@ -16,11 +16,12 @@ STORE = pd.HDFStore(MORGUE_FNAME)
 # TODO: Could probably be even more aggressive about marking columns as optional. 
 # Maybe you should explicitly specify all columns you want in load_frame, and have
 # none of them be default.
-# Or you could buy a computer with more than 2 GB of ram.
 OPTIONAL_COLUMN_PREFIXES = {'rune_', 'saw_', 'skill_', 'visited_'}
-COLUMNS = STORE['mini'].columns
+OPTIONAL_COLUMNS = ['bot', 'hunger']
+COLUMNS = STORE['columns']
 DEFAULT_COLUMNS = [col for col in COLUMNS 
-                    if not any(col.startswith(pre) for pre in OPTIONAL_COLUMN_PREFIXES)
+                    if not (any(col.startswith(pre) for pre in OPTIONAL_COLUMN_PREFIXES)
+                            or col in OPTIONAL_COLUMNS)
                   ]
 
 def load_frame(mini=MINI, raw=False, include=[]):

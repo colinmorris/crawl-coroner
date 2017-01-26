@@ -45,3 +45,20 @@ LEGACY_BGS = set('jester,stalker,priest,healer,paladin,death knight'.split(','))
 
 CANON_SPECIES = SPECIES - LEGACY_SPECIES
 CANON_BGS = BGS - LEGACY_BGS
+
+# Valid 'wheredied' places
+CANON_WD = {'abyss', 'bailey', 'bazaar', 'cocytus', 'crypt', 'depths', 'desolation of salt',
+        'dungeon', 'ecumenical temple', 'elven halls', 'gehenna', 
+        'hall of blades', 'hive',
+        'ice cave', 'iron city of dis', 'labyrinth',
+        'lair of beasts', 'orcish mines', 'ossuary', 'pandemonium',
+        'pits of slime', 'realm of zot', 'sewer', 'shoals', 'snake pit', 'spider nest',
+        'swamp', 'tartarus', 'tomb', 'treasure trove', 'vaults', 'vestibule of hell',
+        'volcano', "wizard's laboratory",  'ziggurat', 
+        'other',
+        #'hive', 'treasure trove', 'north pole',
+}
+
+WIZLABS = {"cigotuvi's fleshworks", "doroklohe's tomb", "wucad mu's monastery", 
+"wizard's laboratory", "zonguldrok's shrine", "iskendrun's mystic tower",
+}

@@ -7,6 +7,7 @@ from collections import Counter
 import time
 import traceback
 from crawl_data import SPECIES, BGS, GODS, BRANCHES
+import crawl_data
 
 # Inaccurately named now
 STRICT_BG_CHECK = 1
@@ -16,6 +17,8 @@ ROW_LIMIT = 0
 # after 20 minutes because of a trivial error. If this is true, just print unhandled
 # exception traces and continue
 SOFT_ERRORS = 1
+
+FLUSH_EVERY = 300000
 
 MAX_UNSUPPORTED_VERSION = StrictVersion('0.9')
 
@@ -30,6 +33,56 @@ class ChunkExhaustionException(Exception):
 
 class MinigameException(Exception):
     pass
+
+# I'm going to ignore the corresponding vampire lines (you were thirsty, very thirsty, etc.)
+HUNGER_LINES = ['you were not hungry.', 'you were completely stuffed.', 'you were hungry.', 
+    'you were full.', 'you were very hungry.', 'you were near starving.', 'you were very full.',
+    'you were starving.',]
+HUNGER_LINES = {line: line[len('you were '):-1] for line in HUNGER_LINES}
+
+def flush(rows, store, i):
+    df = framify(rows)
+    # Appending is a huge pain in the ass, because it'll complain about
+    # any difference in columns or even if you try to insert a categorical
+    # value not seen yet. So just save separate chunks and sew them 
+    # back together later. Bleh.
+    store.put('chunk{}'.format(i), df, format='table')
+    store['columns'] = df.columns
+
+def framify(rows):
+    """Turn a list of rows in dict representations into a pandas dataframe.
+    """
+    frame = pd.DataFrame(rows)
+    frame['nrunes'].fillna(0, inplace=1)
+    for col in frame.columns:
+        boolean_prefixes = ['rune_', 'visited_', 'saw_']
+        if any(col.startswith(pre) for pre in boolean_prefixes):
+            frame[col].fillna(False, inplace=1)
+        elif col.startswith('skill_'):
+            frame[col].fillna(0.0, inplace=1)
+        elif col in ['bg', 'god', 'species', 'wheredied', 'howdied', 'hunger']:
+            frame[col] = frame[col].astype('category')
+
+    versions = [0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20]
+    frame['version'] = frame['version'].astype("category", categories=versions,
+            ordered=True)
+    lvls = range(1, 28)
+    frame['level'] = frame['level'].astype("category", categories=lvls, ordered=True)
+
+    non_null_cols = ['bg', 'god', 'level', 'nrunes', 'species', 'time', 'turns',
+            'version', 'won']
+    for col in non_null_cols:
+        if frame[col].count() != len(frame):
+            print 'Got unexpected null values in column {}'.format(col)
+
+    # Object columns are bad news in terms of memory usage.
+    for col in frame.columns:
+        if frame[col].dtype.name == 'object':
+            print "~~~ WARNING ~~~: Column {} has object type. Are you sure " \
+                    "you wouldn't rather use a category?".format(col)
+
+    return frame
+
 
 class Morgue(object):
     # Keep track of seen bots so we can save them to a file at the end for later use
@@ -55,16 +108,24 @@ class Morgue(object):
 
     @staticmethod
     def normalize_wheredied(wd):
+        if wd in crawl_data.CANON_WD:
+            return wd
         if wd == 'tomb of the ancients':
             return 'tomb'
         if wd == "spider's nest":
             return "spider nest"
         if wd.startswith('level') and 'ziggurat' in wd:
             return 'ziggurat'
+        if wd == "pandemonium (cerebov's castle)":
+            return 'pandemonium'
+        if wd == 'sewers':
+            return 'sewer'
         if wd.startswith('ecumenical temple'):
             # Sometimes see "ecumenical temple (autumnal temple)". No idea.
-            return = 'ecumenical temple'
-        return wd
+            return 'ecumenical temple'
+        if wd in crawl_data.WIZLABS:
+            return "wizard's laboratory"
+        return 'other'
 
     def parse_summary(self, lines):
         """Parse the section at the top, after the version line.
@@ -200,7 +261,7 @@ class Morgue(object):
         if not (won or howdied):
             print "Warning: Couldn't determine cause of death for: {}".format(lines)
         self.setcol('won', won)
-        self.setcol('wheredied', self.normalize_wheredied(wheredied))
+        self.setcol('wheredied', wheredied and self.normalize_wheredied(wheredied))
         self.setcol('howdied', howdied)
 
         timeline = lines[-1]
@@ -278,7 +339,7 @@ class Morgue(object):
         lines = self.next_chunk()
         statuses = lines[0]
         # TODO: handle statuses
-        # TODO: introduces columns with mostly missing values. Problem?
+        # TODO: introduces columns with mostly missing values. Problem? Should look into sparse data structures.
         i = 0
         while i < len(lines):
             line = lines[i]
@@ -302,6 +363,10 @@ class Morgue(object):
             chunk = self.next_chunk()
             if chunk[0].startswith('you visited'):
                 break
+            # Pretty sure these usually come before 'you visited', but should be robust to different orders
+            for line in chunk:
+                if line in HUNGER_LINES:
+                    self.setcol('hunger', HUNGER_LINES[line])
 
         visited = chunk
         assert visited[0].startswith('you visited'), 'Bad visit chunk. First line: {}'.format(visited[0])
@@ -445,8 +510,17 @@ if __name__ == '__main__':
     rows = []
     skips = Counter()
     niters = 0
+    chunk_index = 0
     done = False
     minigame_files = []
+    
+    SAVE = 1
+    if SAVE:
+        fname = 'morgue.h5'
+        assert not os.path.exists(fname), "{} already exists".format(fname)
+        store = pd.HDFStore(fname)
+
+    
     for parent, _, fnames in os.walk(morgue_dir):
         for fname in fnames:
             if not fname.endswith('.txt') or not fname.startswith('morgue'):
@@ -470,7 +544,7 @@ if __name__ == '__main__':
                     if e.message:
                         print e.message
                     # Turning this off for now, cause it's a little verbose
-                    #print "Original trace: {}".format(e.trace)
+                    print "Original trace: {}".format(e.trace)
                     if not SOFT_ERRORS:
                         raise e
                     skips['unexpected'] += 1
@@ -483,55 +557,23 @@ if __name__ == '__main__':
                 if (ROW_LIMIT and niters >= ROW_LIMIT):
                     done = True
                     break
+
+                if (niters % FLUSH_EVERY) == 0 and SAVE:
+                    print "Flushing {} rows to hdfstore".format(FLUSH_EVERY)
+                    flush(rows, store, chunk_index)
+                    chunk_index += 1
+                    rows = []
+
         if done:
             break
 
-    frame = pd.DataFrame(rows)
-    f = frame
-    frame['nrunes'].fillna(0, inplace=1)
-    for col in frame.columns:
-        boolean_prefixes = ['rune_', 'visited_', 'saw_']
-        if any(col.startswith(pre) for pre in boolean_prefixes):
-            frame[col].fillna(False, inplace=1)
-        elif col.startswith('skill_'):
-            frame[col].fillna(0.0, inplace=1)
-        elif col in ['bg', 'god', 'species', 'wheredied', 'howdied']:
-            frame[col] = frame[col].astype('category')
-
-    non_null_cols = ['bg', 'god', 'level', 'nrunes', 'species', 'time', 'turns',
-            'version', 'won']
-    for col in non_null_cols:
-        if f[col].count() != len(f):
-            print 'Got unexpected null values in column {}'.format(col)
-
-    # Object columns are bad news in terms of memory usage.
-    for col in frame.columns:
-        if frame[col].dtype.name == 'object':
-            print "~~~ WARNING ~~~: Column {} has object type. Are you sure " \
-                    "you wouldn't rather use a category?".format(col)
+    if rows and SAVE:
+        flush(rows, store, chunk_index)
+        del rows
 
     print "Finished after {:.0f} seconds".format(time.time()-t0)
 
     print "Skips: {}".format(skips)
-    DEBUG = 0
-    if DEBUG:
-        for col in ['god', 'bg', 'species', 'version', 'wheredied']:
-            print col
-            print frame[col].unique()
-            print
-
-    print "n = {}".format(len(frame))
-
-    def save(df, fname='morgue.h5'):
-        with pd.HDFStore(fname) as store:
-            # For some reason the format=table thing is necessary if using 
-            # categorical vars. I don't really understand this.
-            store.put('m', df, format='table')
-            store.put('mini', df.head(50000), format='table')
-
-    SAVE = 1
-    if SAVE:
-        save(frame)
 
     with open('known_bots.txt', 'w') as f:
         f.write('\n'.join(list(Morgue.bots)) + '\n')

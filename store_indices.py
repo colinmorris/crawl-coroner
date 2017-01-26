@@ -1,10 +1,12 @@
 from vis_common import STORE as S, load_frame
 from crawl_data import CANON_SPECIES, CANON_BGS
 
-f = load_frame(False, True)
+f = load_frame(mini=False, raw=True, include=['bot'])
+
+# TODO: Put mini frame in here, if it's still needed.
 
 # Stable of reusable/composable indices
-# TODO: is there much point to this?
+# TODO: is there much point to this? They're not expensive to compute.
 S['iwon'] = f['won'] == True
 S['ilost'] = f['won'] == False
 S['irecent'] = f['version'] > .16
