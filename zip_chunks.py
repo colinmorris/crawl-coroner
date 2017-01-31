@@ -13,6 +13,7 @@ fname = 'morgue.h5'
 store = pd.HDFStore(fname)
 
 chunk = store['chunk0']
+offset = len(chunk)
 store.put('m', chunk, format='table')
 chunk_index = 1
 while 1:
@@ -20,11 +21,16 @@ while 1:
     if '/'+k not in store.keys():
         break
     chunk = store[k]
+    # Reindex to avoid duplicates
+    chunk.index = pd.Series(chunk.index) + offset
+    offset += len(chunk)
     store.append('m', chunk)
     chunk_index += 1
 
 print "Sewed together {} chunks.".format(chunk_index)
 
 # Remove standalone chunks
-for i in range(chunk_index):
-    store.remove('chunk{}'.format(i))
+# XXX: No point doing this as long as it doesn't free any space.
+if 0:
+    for i in range(chunk_index):
+        store.remove('chunk{}'.format(i))

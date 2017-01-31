@@ -18,7 +18,12 @@ STORE = pd.HDFStore(MORGUE_FNAME)
 # none of them be default.
 OPTIONAL_COLUMN_PREFIXES = {'rune_', 'saw_', 'skill_', 'visited_'}
 OPTIONAL_COLUMNS = ['bot', 'hunger']
-COLUMNS = STORE['columns']
+try:
+    COLUMNS = STORE['columns']
+except KeyError:
+    print "zzzz"
+    STORE['columns'] = STORE['chunk0'].columns.to_series()
+    COLUMNS = STORE['columns']
 DEFAULT_COLUMNS = [col for col in COLUMNS 
                     if not (any(col.startswith(pre) for pre in OPTIONAL_COLUMN_PREFIXES)
                             or col in OPTIONAL_COLUMNS)
@@ -30,7 +35,7 @@ def load_frame(mini=MINI, raw=False, include=[]):
         raw: if False, filter out bot games, trivial games, and games with non-canonical species/bgs
         include: a list of columns or column prefixes to include in addition to DEFAULT_COLUMNS
     """
-    framekey = 'mini' if mini else 'm'
+    framekey = 'chunk0' if mini else 'm'
     cols = DEFAULT_COLUMNS
     # For convenience, allow a single scalar instead of a length-1 list
     if isinstance(include, basestring):

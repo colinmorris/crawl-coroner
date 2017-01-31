@@ -41,7 +41,7 @@ HUNGER_LINES = ['you were not hungry.', 'you were completely stuffed.', 'you wer
 HUNGER_LINES = {line: line[len('you were '):-1] for line in HUNGER_LINES}
 
 def flush(rows, store, i):
-    df = framify(rows)
+    df = framify(rows, i)
     # Appending is a huge pain in the ass, because it'll complain about
     # any difference in columns or even if you try to insert a categorical
     # value not seen yet. So just save separate chunks and sew them 
@@ -49,10 +49,10 @@ def flush(rows, store, i):
     store.put('chunk{}'.format(i), df, format='table')
     store['columns'] = df.columns
 
-def framify(rows):
+def framify(rows, chunk_idx):
     """Turn a list of rows in dict representations into a pandas dataframe.
     """
-    frame = pd.DataFrame(rows)
+    frame = pd.DataFrame(rows) #, index=range(FLUSH_EVERY*chunk_idx, FLUSH_EVERY))
     frame['nrunes'].fillna(0, inplace=1)
     for col in frame.columns:
         boolean_prefixes = ['rune_', 'visited_', 'saw_']
