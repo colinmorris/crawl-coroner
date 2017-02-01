@@ -1,0 +1,9 @@
+adjustText==0.5.2
+BeautifulSoup==3.2.1
+jupyter==1.0.0
+matplotlib==2.0.0
+nbconvert==5.0.0
+numpy==1.12.0
+pandas==0.19.2
+scipy==0.18.1
+tables==3.3.0
