@@ -1,44 +1,31 @@
-
-SPECIES = set([sp.lower() for sp in ('Human,High Elf,Deep Elf,Deep Dwarf,Hill Orc,Halfling,Kobold,Spriggan,Ogre,Troll,Naga,'
+# Current as of 0.19
+CURRENT_SPECIES = set([sp.lower() for sp in 
+    ('Human,High Elf,Deep Elf,Deep Dwarf,Hill Orc,Halfling,Kobold,Spriggan,Ogre,Troll,Naga,'
         + 'Centaur,Merfolk,Minotaur,Tengu,Draconian,Gargoyle,Formicid,Vine Stalker,Demigod,Demonspawn,'
         + 'Mummy,Ghoul,Vampire,Felid,Octopode,'
         + 'Black Draconian,Purple Draconian,Green Draconian,Yellow Draconian,Red Draconian,'
         + 'Mottled Draconian,White Draconian,Grey Draconian,Pale Draconian,'
-        # Legacy/in development (wtf is a Grotesk?)
-        + 'Mountain Dwarf,Djinni,Lava Orc,Sludge Elf,Barachian,Kenku,Grotesk'
-        ).split(',')])
+).split(',')])
+        
+# Species that were removed between 0.10 and 0.19
+LEGACY_SPECIES = {'mountain dwarf' , 'sludge elf'}
+# Species that never made it into a release.
+WEIRD_SPECIES = {'djinni', 'lava orc', 'barachian', 'grotesk'}
+# Worth noting 'kenku' (old name for tengu) is not in any of these, but it gets 
+# remapped when parsing
+CANON_SPECIES = set.union(CURRENT_SPECIES, LEGACY_SPECIES)
 
-BGS = set([bg.lower() for bg in ('Fighter,Gladiator,Monk,Hunter,Assassin,Artificer,Wanderer,Berserker,Abyssal Knight,'
+
+
+CURRENT_BGS = set([bg.lower() for bg in ('Fighter,Gladiator,Monk,Hunter,Assassin,Artificer,Wanderer,Berserker,Abyssal Knight,'
         + 'Chaos Knight,Skald,Transmuter,Warper,Arcane Marksman,Enchanter,Wizard,Conjurer,'
         + 'Summoner,Necromancer,Fire Elementalist,Ice Elementalist,Air Elementalist,'
-        + 'Earth Elementalist,Venom Mage,'
-        # Legacy
-        + 'Jester,Stalker,Priest,Healer,Paladin,Death Knight').split(',')])
+        + 'Earth Elementalist,Venom Mage,').split(',')])
 
-# dithmengos is borderline, and ukayaw
-# Actually, should probably add them back and filter them out from canonical frame
-# used for most analyses, like I'm doing with djinnis, jesters, stalkers, etc.
-GODS = set(('ashenzari,beogh,cheibriados,dithmenos,elyvilon,fedhas,gozag,hepliaklqana,jiyva,kikubaaqudgha,lugonu,makhleb,nemelex xobeh,okawaru,pakellas,qazlal,ru,sif muna,the shining one,trog,uskayaw,vehumet,xom,yredelemnul,zin').split(','))
-
-def lookup_fancy_god_name(name):
-    if name in GODS:
-        return name
-    if name == 'warmaster okawaru':
-        return 'okawaru'
-    if name == 'the xom-meister': # really?
-        return 'xom'
-    parts = name.split()
-    if name[0] in GODS:
-        return name[0]
-    binomial = ' '.join(name[:2])
-    if binomial in GODS:
-        return binomial
-    assert False, "Unrecognized fancy god name: {}".format(name)
-
-# Skipping dungeon, hells, because they're probably not useful for the kind of
-# analysis I'm planning to do with this information
-BRANCHES = set(('temple,lair,shoals,snake,slime,orc,elf,vaults,swamp,spider'
-    + ',depths,tomb,zot,crypt').split(','))
+LEGACY_BGS = {'stalker', 'priest', 'healer', 'death knight'}
+# According to the wiki, paladins were removed in 0.8.0
+WEIRD_BGS = {'jester', 'paladin'}
+CANON_BGS = set.union(CURRENT_BGS, LEGACY_BGS)
 
 GROUPED_BGS = {
         'Warriors': 'fighter,gladiator,monk,hunter,assassin',
@@ -47,19 +34,39 @@ GROUPED_BGS = {
         'Mages': 'wizard,conjurer,summoner,necromancer,fire elementalist' +
             ',ice elementalist,air elementalist,earth elementalist,venom mage',
 }
-
 for k,v in GROUPED_BGS.items():
     GROUPED_BGS[k] = v.split(',')
 
 
-# TODO: Distinguish removed vs. never-made-it-into-a-release
-REMOVED_SPECIES = set('mountain dwarf,sludge elf'.split())
-LEGACY_SPECIES = set('mountain dwarf,djinni,lava orc,sludge elf,barachian,kenku,grotesk'.split(','))
 
-LEGACY_BGS = set('jester,stalker,priest,healer,paladin,death knight'.split(','))
+GODS = set(('ashenzari,beogh,cheibriados,dithmenos,elyvilon,fedhas,gozag,hepliaklqana,jiyva,kikubaaqudgha,lugonu,makhleb,nemelex xobeh,okawaru,pakellas,qazlal,ru,sif muna,the shining one,trog,uskayaw,vehumet,xom,yredelemnul,zin').split(','))
 
-CANON_SPECIES = SPECIES - LEGACY_SPECIES
-CANON_BGS = BGS - LEGACY_BGS
+RENAMED_GODS = {'dithmengos': 'dithmenos', 'ukayaw': 'uskayaw'}
+
+def lookup_fancy_god_name(name):
+    if name in GODS:
+        return name
+    if name in RENAMED_GODS:
+        return RENAMED_GODS[name]
+    if name == 'warmaster okawaru':
+        return 'okawaru'
+    if name == 'the xom-meister': # really?
+        return 'xom'
+    parts = name.split()
+    if parts[0] in GODS:
+        return name[0]
+    if parts[0] in RENAMED_GODS:
+        return RENAMED_GODS[parts[0]]
+    binomial = ' '.join(parts[:2])
+    if binomial in GODS:
+        return binomial
+    assert False, "Unrecognized fancy god name: {!r}".format(name)
+
+# Skipping dungeon, hells, because they're probably not useful for the kind of
+# analysis I'm planning to do with this information
+BRANCHES = set(('temple,lair,shoals,snake,slime,orc,elf,vaults,swamp,spider'
+    + ',depths,tomb,zot,crypt').split(','))
+
 
 # Valid 'wheredied' places
 CANON_WD = {'abyss', 'bailey', 'bazaar', 'cocytus', 'crypt', 'depths', 'desolation of salt',
@@ -95,11 +102,15 @@ RUNES = {
         'serpentine', 'silver', 'slimy',
 }
 
+# We use a dedicated category value for atheists to simplify analysis (and to
+# make it clear that this represents "no god" not "unknown/missing god")
+_god_cats = GODS.union({'none'})
+
 COLUMN_TO_CATEGORIES = {
-    'bg':           BGS,
-    'species':      SPECIES,
-    'god':          GODS,
-    'first_conversion': GODS,
+    'bg':           CANON_BGS,
+    'species':      CANON_SPECIES,
+    'god':          _god_cats,
+    'first_conversion': _god_cats,
     'wheredied':    CANON_WD,
     'hunger':       HUNGER_LINES,
     'howdied':      CANON_HOWDIED,

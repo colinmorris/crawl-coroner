@@ -2,6 +2,7 @@ import re
 
 from base import ChunkParser
 from .. import crawl_data
+from ..coroner_exceptions import *
 
 class SummaryParser(ChunkParser):
     order = 1
@@ -38,14 +39,19 @@ class SummaryParser(ChunkParser):
         else:
             sp = ' '.join(parts[:2])
             bg = ' '.join(parts[2:])
-        try:
-            assert sp in crawl_data.SPECIES, 'Unrecognized species: {}'.format(sp)
-            assert bg in crawl_data.BGS, 'Unrecognized background: {}'.format(bg)
-        except AssertionError as e:
-            print e.message
         # Was renamed in 0.10
         if sp == 'kenku':
             sp = 'tengu'
+
+        if sp not in crawl_data.CANON_SPECIES:
+            # Not a canonical species. Hopefully it's a devil we know.
+            assert sp in crawl_data.WEIRD_SPECIES, "Unrecognized species: {}".format(sp)
+            raise ExperimentalComboException
+
+        if bg not in crawl_data.CANON_BGS:
+            assert bg in crawl_data.WEIRD_BGS, "Unrecognized bg: {}".format(bg)
+            raise ExperimentalComboException
+        
         yield 'species', sp
         yield 'bg', bg
 

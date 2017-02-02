@@ -2,6 +2,7 @@ import pandas as pd
 from collections import defaultdict
 
 import crawl_data
+import schema_data as schema
 
 class MorgueCollector(object):
 
@@ -19,9 +20,10 @@ class MorgueCollector(object):
     def add_morgue(self, morg):
         morg.game_row['pid'] = self.player_lookup[morg.name]
         self.game_rows.append(morg.game_row)
-        for table,row in morg.ancillary_rows.items():
-            row['gid'] = gid
-            self.tables_to_rows[table].append(row)
+        for table, rows in morg.ancillary_rows.items():
+            for row in rows:
+                row['gid'] = self.gid
+                self.tables_to_rows[table].append(row)
         self.gid += 1
 
     def flush(self, store, final=False, flush_ancillary=False):
@@ -33,7 +35,16 @@ class MorgueCollector(object):
             - append to the appropriate key in the store
         """
         df = self.gameframe()
-        store.append('games', df)
+        cols = df.columns
+        table_to_cols = {'games': None} # Games gets all the leftovers
+        for (prefix, table) in schema.PREFIX_TO_SIDE_TABLE.iteritems():
+            table_to_cols[table] = [col for col in cols if col.startswith(prefix)]
+        # TODO: Update df loading code.
+        # TODO: May want to actually specify some data columns later so we can
+        # use hdf to apply some simple where conditions when loading a frame
+        # (e.g. filtering by bot is a useful one, or if we add a derived column
+        # for 'legitness')
+        store.append_to_multiple(table_to_cols, df, 'games', data_columns=[])
         self.game_rows = []
     
         # Players. (Might just be better off pickling a dict or something?)
@@ -72,7 +83,7 @@ class MorgueCollector(object):
             elif col.startswith('skill_'):
                 frame[col].fillna(0.0, inplace=1)
 
-        for col, cats in COLUMN_TO_CATEGORIES.iteritems():
+        for col, cats in crawl_data.COLUMN_TO_CATEGORIES.iteritems():
             frame[col] = frame[col].astype('category', categories=cats)
 
         versions = [0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20]
@@ -82,7 +93,7 @@ class MorgueCollector(object):
         frame['level'] = frame['level'].astype("category", categories=lvls, ordered=True)
 
         non_null_cols = ['bg', 'god', 'level', 'nrunes', 'species', 'time', 'turns',
-                'version', 'won']
+                'version', 'won',]
         for col in non_null_cols:
             if frame[col].count() != len(frame):
                 print 'Got unexpected null values in column {}'.format(col)

@@ -21,13 +21,14 @@ class Morgue(object):
     def __init__(self, f):
         self.f = f
         self.game_row = {}
+        # This is for tables that have 0-to-many rows per game
         self.ancillary_rows = defaultdict(list)
         self.name = None # player name
         try:
             self.parse()
         except Exception as e:
             e.fname = self.f.name
-            e.version = self.m.get('version', 'UNK')
+            e.version = self.game_row.get('version', 'UNK')
             # Unfortunately, it seems like the original line number gets lost
             # when reraising. This seems like a hack. Is there no better way?
             e.trace = traceback.format_exc(e)
@@ -37,10 +38,8 @@ class Morgue(object):
         dest = self.game_row if table == 'game' else self.ancillary_rows[table]
         dest[col] = value
 
-    def setrow(self, rowdict, table):
-        assert table not in self.ancillary_rows, 'Tried to overwrite {}'.format(table)
-        self.ancillary_rows[table] = rowdict
-
+    def addrow(self, rowdict, table):
+        self.ancillary_rows[table].append(rowdict)
 
     def parse(self):
         # TODO: WIP
@@ -79,7 +78,8 @@ class Morgue(object):
             god = ' '.join(parts[gindex:])[1:]
         # Apparently some inconsistency in case for TSO
         god = god.lower()
-        assert god == 'none' or god in GODS, 'Unrecognized god: {}'.format(god)
+        god = crawl_data.RENAMED_GODS.get(god, god)
+        assert god == 'none' or god in crawl_data.GODS, 'Unrecognized god: {}'.format(god)
         self.setcol('god', god)
 
         percent = self.next_chunk()
@@ -89,7 +89,7 @@ class Morgue(object):
         # TODO: handle statuses
         # TODO: introduces columns with mostly missing values. Problem? Should look into sparse data structures.
         i = 0
-        while i < len(lines):
+        while False and i < len(lines):
             line = lines[i]
             i += 1
             if line.startswith('}:'):
@@ -203,21 +203,29 @@ class Morgue(object):
 
     def parse_notes(self, chunk):
         plvl = None
+        bot = False
         # Number of times worshipped a new god. (Doesn't count
         # initial gods from zealot backgrounds)
         conversions = 0
         runes_so_far = 0
-        for noteline in chunk:
-            turn, place, note = [text.strip() for text in noteline.strip('|', 2)]
+        # Have to skip "Notes" title, then column headings, then hr
+        note_idx_start = 3 
+        # Some notes sections have a trailing line with some spaces (not just
+        # a newline, which would be ommitted by next_chunk())
+        trailing = chunk[-1] == ''
+        note_idx_end = len(chunk) - (1 if trailing else 0)
+        for noteline in chunk[note_idx_start:note_idx_end]:
+            try:
+                turn, place, note = [text.strip() for text in noteline.split('|', 2)]
+            except ValueError:
+                raise Exception("Unparseable note line: {!r}".format(noteline))
             # Bot?
             # elliptic's qw bot (which I think is the only one really in use, or 
             # at least the most popular), leaves some telltale marks in the notes
             # section. 
-            if re.search('\d+ \|\|\| ', note):
-                self.setcol('bot', True)
+            if not bot and re.search('\d+ \|\|\| ', note):
+                bot = True
                 self.bots.add(self.name)
-            elif self.name in self.bots:
-                print "WARNING: {} was in list of known bots, but seemed not to be botting this game: {}".format(self.f.name)
 
             # Reached temple?
             if noteline == 'found a staircase to the ecumenical temple.':
@@ -241,16 +249,21 @@ class Morgue(object):
                 self.setcol('first_conversion', god)
 
             # Got a rune?
-            m = re.match('got a (\w+) rune of zot')
+            m = re.match('got a (\w+) rune of zot', note)
             if m:
-                self.setrow(
+                self.addrow(
                     # Use 1-based indexing
                     {'rune': m.group(1), 'order': runes_so_far+1},
                     'runes'
                 )
                 runes_so_far += 1
 
+        self.setcol('nrunes', runes_so_far)
         self.setcol('religious_experiences', conversions)
+        self.setcol('bot', bot)
+        if self.name in self.bots and not bot:
+            print ("WARNING: {} was in list of known bots, but seemed not to"
+                +" be botting this game: {}").format(self.name, noteline)
 
             
 
@@ -261,6 +274,7 @@ class Morgue(object):
         chunk = []
         while 1:
             line = self.f.readline()
+            # Have we exhausted the file?
             if line == '':
                 if chunk:
                     return chunk

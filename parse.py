@@ -33,7 +33,7 @@ if __name__ == '__main__':
         assert not os.path.exists(fname), "{} already exists".format(fname)
         store = pd.HDFStore(fname)
 
-    walker = MorgueCollector() 
+    collector = MorgueCollector() 
     for parent, _, fnames in os.walk(morgue_dir):
         for fname in fnames:
             if not fname.endswith('.txt') or not fname.startswith('morgue'):
@@ -45,21 +45,24 @@ if __name__ == '__main__':
                     skips[e.__class__.__name__] += 1
                 except Exception as e:
                     print "Unhandled {} in file {}. Version={}".format(
-                            e.__class__.__name__, e.fname, e.version)
+                            e.__class__.__name__, getattr(e, 'fname', 'UNKNOWN_FNAME'), 
+                            getattr(e, 'version', 'UNKNOWN_VERSION'),
+                    )
                     if e.message:
                         print e.message
                     # May want to turn this off. It can be a little verbose. Or, y'know,
                     # just fix the code so it throws fewer unexpected exceptions.
-                    print "Original trace: {}".format(e.trace)
+                    if hasattr(e, 'trace'):
+                        print "Original trace: {}".format(e.trace)
                     if not SOFT_ERRORS:
                         raise e
                     skips[e.__class__.__name__] += 1
                 else:
-                    walker.add_morgue(morg)
+                    collector.add_morgue(morg)
                     niters += 1
             
-                if (walker.gid % 1000) == 0:
-                    print 'i={} '.format(walker.gid),
+                if (collector.gid % 1000) == 0:
+                    print 'i={} '.format(collector.gid),
 
                 if (ROW_LIMIT and niters >= ROW_LIMIT):
                     done = True
@@ -67,15 +70,21 @@ if __name__ == '__main__':
 
                 if (niters % FLUSH_EVERY) == 0 and SAVE:
                     print "Flushing {} rows to hdfstore".format(FLUSH_EVERY)
-                    walker.flush(store, flush_ancillary=FLUSH_ANCILLARY)
+                    collector.flush(store, flush_ancillary=FLUSH_ANCILLARY)
 
         if done:
             break
 
-    if SAVE:
-        walker.flush(store, final=True)
-
+    # Lots of spam probably came before this
+    print
+    print ("*"*60+'\n')*2,
     print "Finished after {:.0f} seconds".format(time.time()-t0)
+    if SAVE:
+        collector.flush(store, final=True)
+    else:
+        # If we're not saving, we're probably running this interactively to
+        # poke at the generated dataframe
+        df = collector.gameframe()
 
     print "Skips: {}".format(skips)
 

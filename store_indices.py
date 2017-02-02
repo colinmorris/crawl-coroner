@@ -22,8 +22,6 @@ S['iquit'] = f['howdied']=='quit'
 S['icleaned'] = (f['species'].isin(CANON_SPECIES) 
         & f['bg'].isin(CANON_BGS)
         & (f['bot'] == False)
-        # There's an argument to be made for making this more extreme 
-        # and just excluding all quit games.
         & (~ ( (f['level'] == 1) & (f['howdied'] == 'quit') ) )
 )
 

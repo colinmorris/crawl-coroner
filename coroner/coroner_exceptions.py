@@ -17,3 +17,10 @@ class ChunkExhaustionException(CoronerException):
 class MinigameException(RoutineCoronerException):
     """Raised if this is a sprint/zot defense game rather than crawl proper"""
     pass
+
+class ExperimentalComboException(RoutineCoronerException):
+    """Raised for games involving experimental species or backgrounds - ones that
+    never made it into a release. We exclude these from the data since they represent
+    a small, noisy sample, and generally make things awkward.
+    """
+    pass
