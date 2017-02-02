@@ -3,14 +3,12 @@ import sys
 import re
 import pandas as pd
 from distutils.version import StrictVersion
-from collections import Counter
+from collections import Counter, defaultdict
 import time
 import traceback
-from crawl_data import SPECIES, BGS, GODS, BRANCHES
+from crawl_data import SPECIES, BGS, GODS, BRANCHES, HUNGER_LINES
 import crawl_data
 
-# Inaccurately named now
-STRICT_BG_CHECK = 1
 ROW_LIMIT = 0
 
 # Running this over gbs of logs takes a while. It kind of sucks to lose all progress
@@ -19,10 +17,12 @@ ROW_LIMIT = 0
 SOFT_ERRORS = 1
 
 FLUSH_EVERY = 300000
+FLUSH_ANCILLARY = 0
 
 MAX_UNSUPPORTED_VERSION = StrictVersion('0.9')
 
 class VersionException(Exception):
+    """Unrecognized version string"""
     pass
 
 class OldVersionException(Exception):
@@ -32,56 +32,131 @@ class ChunkExhaustionException(Exception):
     pass
 
 class MinigameException(Exception):
+    """Raised if this is a sprint/zot defense game rather than crawl proper"""
     pass
 
-# I'm going to ignore the corresponding vampire lines (you were thirsty, very thirsty, etc.)
-HUNGER_LINES = ['you were not hungry.', 'you were completely stuffed.', 'you were hungry.', 
-    'you were full.', 'you were very hungry.', 'you were near starving.', 'you were very full.',
-    'you were starving.',]
-HUNGER_LINES = {line: line[len('you were '):-1] for line in HUNGER_LINES}
 
-def flush(rows, store, i):
-    df = framify(rows, i)
-    # Appending is a huge pain in the ass, because it'll complain about
-    # any difference in columns or even if you try to insert a categorical
-    # value not seen yet. So just save separate chunks and sew them 
-    # back together later. Bleh.
-    store.put('chunk{}'.format(i), df, format='table')
-    store['columns'] = df.columns
+# XXX: Maybe 'MorgueCollector' would be a better name?
+class MorgueWalker(object):
 
-def framify(rows, chunk_idx):
-    """Turn a list of rows in dict representations into a pandas dataframe.
-    """
-    frame = pd.DataFrame(rows) #, index=range(FLUSH_EVERY*chunk_idx, FLUSH_EVERY))
-    frame['nrunes'].fillna(0, inplace=1)
-    for col in frame.columns:
-        boolean_prefixes = ['rune_', 'visited_', 'saw_']
-        if any(col.startswith(pre) for pre in boolean_prefixes):
-            frame[col].fillna(False, inplace=1)
-        elif col.startswith('skill_'):
-            frame[col].fillna(0.0, inplace=1)
-        elif col in ['bg', 'god', 'species', 'wheredied', 'howdied', 'hunger']:
-            frame[col] = frame[col].astype('category')
+    def __init__(self):
+        # Next available 'game id' (index of game df)
+        self.gid = 0
+        self.skips = Counter()
+        # Main table/dataframe, with columns describing individual games
+        self.game_rows = []
+        # Ancilliary tables
+        self.tables_to_rows = defaultdict(list)
+        self.minigame_files = []
+        self._lastflushed_id = -1
+        # Autoincrementing ids per player
+        self.player_lookup = defaultdict(lambda: len(self.player_lookup))
 
-    versions = [0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20]
-    frame['version'] = frame['version'].astype("category", categories=versions,
-            ordered=True)
-    lvls = range(1, 28)
-    frame['level'] = frame['level'].astype("category", categories=lvls, ordered=True)
+    def flush(self, store, final=False):
+        """
+        for each table and list of rows...
+            - make an appropriate dataframe from those rows 
+                (doing index offsets if necessary)
+                - XXX: what does this look like for non-core tables?
+            - append to the appropriate key in the store
+        """
+        df = self.gameframe()
+        store.append('games', df)
+        self.game_rows = []
+    
+        # Players. (Might just be better off pickling a dict or something?)
+        if final:
+            names, pids = zip(*self.player_lookup.items())
+            store['players'] = pd.Series(names, index=pids)
+        # TODO: ancillary tables
+        if final or FLUSH_ANCILLARY:
+            for table in self.tables_to_rows:
+                df = self.ancillary_frame(table)
+                store.append(table, df)
 
-    non_null_cols = ['bg', 'god', 'level', 'nrunes', 'species', 'time', 'turns',
-            'version', 'won']
-    for col in non_null_cols:
-        if frame[col].count() != len(frame):
-            print 'Got unexpected null values in column {}'.format(col)
+    def ancillary_frame(self, table):
+        rows = self.tables_to_rows[table]
+        df = pd.DataFrame(rows)
+        # TODO: less ad-hoc structure for defining per-table cleaning rules
+        if table == 'runes':
+            df['order'] = df['order'].astype('category', categories=range(1,16),
+                    ordered=True)
+            df['rune'] = df['rune'].astype('category', 
+                    categories=crawl_data.RUNES)
+        else:
+            print "~~WARNING: No data cleaning rules defined for "\
+                    + "ancillary table {}".format(table)
+        return df
 
-    # Object columns are bad news in terms of memory usage.
-    for col in frame.columns:
-        if frame[col].dtype.name == 'object':
-            print "~~~ WARNING ~~~: Column {} has object type. Are you sure " \
-                    "you wouldn't rather use a category?".format(col)
 
-    return frame
+    def gameframe(self):
+        frame = pd.DataFrame(self.game_rows, 
+                index=range(self._lastflushed_id+1, len(self.game_rows))
+        )
+        frame['nrunes'].fillna(0, inplace=1)
+        for col in frame.columns:
+            boolean_prefixes = ['rune_', 'visited_', 'saw_']
+            if any(col.startswith(pre) for pre in boolean_prefixes):
+                frame[col].fillna(False, inplace=1)
+            elif col.startswith('skill_'):
+                frame[col].fillna(0.0, inplace=1)
+
+        for col, cats in COLUMN_TO_CATEGORIES.iteritems():
+            frame[col] = frame[col].astype('category', categories=cats)
+
+        versions = [0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20]
+        frame['version'] = frame['version'].astype("category", categories=versions,
+                ordered=True)
+        lvls = range(1, 28)
+        frame['level'] = frame['level'].astype("category", categories=lvls, ordered=True)
+
+        non_null_cols = ['bg', 'god', 'level', 'nrunes', 'species', 'time', 'turns',
+                'version', 'won']
+        for col in non_null_cols:
+            if frame[col].count() != len(frame):
+                print 'Got unexpected null values in column {}'.format(col)
+
+        # Object columns are bad news in terms of memory usage.
+        for col in frame.columns:
+            if frame[col].dtype.name == 'object':
+                print "~~~ WARNING ~~~: Column {} has object type. Are you sure " \
+                        "you wouldn't rather use a category?".format(col)
+
+        return frame
+
+
+    def add_morgue(self, morg, gid):
+        morg.game_row['pid'] = self.player_lookup[morg.name]
+        self.game_rows.append(morg.game_row)
+        for table,row in morg.ancillary_rows.items():
+            row['gid'] = gid
+            self.tables_to_rows[table].append(row)
+
+    def parse_morguefile(self, f):
+        try:
+            morg = Morgue(f)
+        except VersionException as ve:
+            self.skips['vstring'] += 1
+        except MinigameException as me:
+            self.skips['minigame'] += 1
+            self.minigame_files.append(f.name)
+        except OldVersionException as ove:
+            self.skips['old'] += 1
+        except Exception as e:
+            print "Unhandled {} in file {}. Version={}".format(
+                    e.__class__.__name__, e.fname, e.version)
+            if e.message:
+                print e.message
+            # Turning this off for now, cause it's a little verbose
+            print "Original trace: {}".format(e.trace)
+            if not SOFT_ERRORS:
+                raise e
+            self.skips['unexpected'] += 1
+        else:
+            self.add_morgue(morg, self.gid)
+            self.gid += 1
+
+
 
 
 class Morgue(object):
@@ -89,9 +164,9 @@ class Morgue(object):
     bots = set()
     def __init__(self, f):
         self.f = f
-        # The core morgue data structure. Used for simple scalar columns.
-        self.m = {}
-        self.skills = {}
+        self.game_row = {}
+        self.ancillary_rows = defaultdict(list)
+        self.name = None # player name
         try:
             self.parse()
         except Exception as e:
@@ -102,9 +177,13 @@ class Morgue(object):
             e.trace = traceback.format_exc(e)
             raise e
 
-    def setcol(self, col, value):
-        # I thought I needed to inject some behaviour here, but turns out I don't.
-        self.m[col] = value
+    def setcol(self, col, value, table='game'):
+        dest = self.game_row if table == 'game' else self.ancillary_rows[table]
+        dest[col] = value
+
+    def setrow(self, rowdict, table):
+        assert table not in self.ancillary_rows, 'Tried to overwrite {}'.format(table)
+        self.ancillary_rows[table] = rowdict
 
     @staticmethod
     def normalize_wheredied(wd):
@@ -156,10 +235,7 @@ class Morgue(object):
             assert sp in SPECIES, 'Unrecognized species: {}'.format(sp)
             assert bg in BGS, 'Unrecognized background: {}'.format(bg)
         except AssertionError as e:
-            if STRICT_BG_CHECK:
-                raise e
-            else:
-                print e.message
+            print e.message
         # Was renamed in 0.10
         if sp == 'kenku':
             sp = 'tengu'
@@ -454,21 +530,56 @@ class Morgue(object):
 
 
     def parse_notes(self, chunk):
-        # elliptic's qw bot (which I think is the only one really in use, or 
-        # at least the most popular), leaves some telltale marks in the notes
-        # section. 
-        # Can probably get away with just checking first 10 notes or so (in fact,
-        # I'm pretty sure it's guaranteed to put a note like '0 ||| counter = 303'
-        # in the third note every time)
-        bot = False
-        for noteline in chunk[3:13]:
-            if re.search(' \d+ \|\|\| ', noteline):
-                bot = True
+        plvl = None
+        # Number of times worshipped a new god. (Doesn't count
+        # initial gods from zealot backgrounds)
+        conversions = 0
+        runes_so_far = 0
+        for noteline in chunk:
+            turn, place, note = [text.strip() for text in noteline.strip('|', 2)]
+            # Bot?
+            # elliptic's qw bot (which I think is the only one really in use, or 
+            # at least the most popular), leaves some telltale marks in the notes
+            # section. 
+            if re.search('\d+ \|\|\| ', note):
+                self.setcol('bot', True)
                 self.bots.add(self.name)
-                break
-        self.setcol('bot', bot)
-        if not bot and self.name in self.bots:
-            print "WARNING: {} was in list of known bots, but seemed not to be botting this game: {}".format(self.f.name)
+            elif self.name in self.bots:
+                print "WARNING: {} was in list of known bots, but seemed not to be botting this game: {}".format(self.f.name)
+
+            # Reached temple?
+            if noteline == 'found a staircase to the ecumenical temple.':
+                assert place.startswith('D:'), noteline
+                temple_lvl = int(place[2:])
+                self.setcol('temple_depth', temple_lvl)
+                assert plvl is not None, "Found temple before reaching xl 1?"
+                    self.setcol('temple_xl', plvl)
+
+            # Leveled up?
+            m = re.match('reached xp level (\d+)', note)
+            if m:
+                plvl = int(m.group(1))
+
+            # Converted?
+            worship_prefix = 'became a worshipper of '
+            if note.startswith(worship_prefix):
+                conversions += 1
+                fancyname = note[len(worship_prefix):]
+                god = crawl_data.lookup_fancy_god_name(fancyname)
+                self.setcol('first_conversion', god)
+
+            # Got a rune?
+            m = re.match('got a (\w+) rune of zot')
+            if m:
+                self.setrow(
+                    # Use 1-based indexing
+                    {'rune': m.group(1), 'order': runes_so_far+1},
+                    'runes'
+                )
+                runes_so_far += 1
+
+        self.setcol('religious_experiences', conversions)
+
             
 
     def next_chunk(self):
@@ -510,57 +621,32 @@ if __name__ == '__main__':
     rows = []
     skips = Counter()
     niters = 0
+    gid = 0
     chunk_index = 0
     done = False
-    minigame_files = []
-    
     SAVE = 1
     if SAVE:
         fname = 'morgue.h5'
         assert not os.path.exists(fname), "{} already exists".format(fname)
         store = pd.HDFStore(fname)
 
-    
+    walker = MorgueWalker() 
     for parent, _, fnames in os.walk(morgue_dir):
         for fname in fnames:
             if not fname.endswith('.txt') or not fname.startswith('morgue'):
                 continue
             with open(os.path.join(parent, fname)) as f:
-                try:
-                    morg = Morgue(f)
-                except VersionException as ve:
-                    skips['vstring'] += 1
-                    continue
-                except MinigameException as me:
-                    skips['minigame'] += 1
-                    minigame_files.append(f.name)
-                    continue
-                except OldVersionException as ove:
-                    skips['old'] += 1
-                    continue
-                except Exception as e:
-                    print "Unhandled {} in file {}. Version={}".format(
-                            e.__class__.__name__, e.fname, e.version)
-                    if e.message:
-                        print e.message
-                    # Turning this off for now, cause it's a little verbose
-                    print "Original trace: {}".format(e.trace)
-                    if not SOFT_ERRORS:
-                        raise e
-                    skips['unexpected'] += 1
-                    continue
-                rows.append(morg.m)
-                niters += 1
-                if (niters % 1000) == 0:
-                    print 'i={} '.format(niters),
+                walker.parse_morguefile(f)
+                if (walker.gid % 1000) == 0:
+                    print 'i={} '.format(walker.gid),
 
-                if (ROW_LIMIT and niters >= ROW_LIMIT):
+                if (ROW_LIMIT and walker.gid >= ROW_LIMIT):
                     done = True
                     break
 
-                if (niters % FLUSH_EVERY) == 0 and SAVE:
+                if (walker.gid % FLUSH_EVERY) == 0 and SAVE:
                     print "Flushing {} rows to hdfstore".format(FLUSH_EVERY)
-                    flush(rows, store, chunk_index)
+                    walker.flush(rows, store, chunk_index)
                     chunk_index += 1
                     rows = []
 
@@ -568,18 +654,19 @@ if __name__ == '__main__':
             break
 
     if rows and SAVE:
-        flush(rows, store, chunk_index)
-        del rows
+        walker.flush(store, True)
 
     print "Finished after {:.0f} seconds".format(time.time()-t0)
 
-    print "Skips: {}".format(skips)
+    print "Skips: {}".format(walker.skips)
 
     with open('known_bots.txt', 'w') as f:
         f.write('\n'.join(list(Morgue.bots)) + '\n')
 
-    if minigame_files:
+    if walker.minigame_files:
         fname = 'minigames.txt'
-        print "Writing {} minigame morgue paths to {}".format(len(minigame_files), fname)
+        print "Writing {} minigame morgue paths to {}".format(
+                len(walker.minigame_files), fname
+        )
         with open(fname, 'w') as f:
-            f.write('\n'.join(minigame_files) + '\n')
+            f.write('\n'.join(walker.minigame_files) + '\n')
