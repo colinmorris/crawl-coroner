@@ -95,8 +95,7 @@ RUNES = {
         'serpentine', 'silver', 'slimy',
 }
 
-COLUMN_TO_CATEGORIES = 
-{
+COLUMN_TO_CATEGORIES = {
     'bg':           BGS,
     'species':      SPECIES,
     'god':          GODS,
