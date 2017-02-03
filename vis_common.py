@@ -8,12 +8,16 @@ _STORE = None
 
 
 def load_games(legit=True, extra_tables=[], n=None):
-    where = 'legit' if legit else None
+    global _STORE
+    where = 'legit==True' if legit else None
     if _STORE is None:
         _STORE = pd.HDFStore(STORE_FNAME)
-    if not extra_column_prefixes:
+    if not extra_tables:
         return _STORE.select('games', stop=n, where=where)
 
+    # Concession to my absent-mindedness
+    if isinstance(extra_tables, basestring):
+        extra_tables = [extra_tables]
     tables = ['games'] + extra_tables
     return _STORE.select_as_multiple(tables, where=where)
 

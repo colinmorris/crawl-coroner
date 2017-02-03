@@ -18,13 +18,15 @@ Maaaaybe these should even live in a separate sub-package?
 class ChunkParser(object):
     # If parserA.order < parserB.order, then the chunk that A is interested
     # in usually comes before the one that B is interested in
+    # TODO: Maybe this should be coordinated at a higher level, rather than
+    # trying to keep these numbers in sync across a bunch of modules
     order = -1
-    # If this parser isn't activated for a given morgue file, consider it
-    # an error.
-    mandatory = True
+    # TODO: Might want to define level of 'out of order tolerance' for
+    # each parser?
+    shy = False
     @staticmethod
     def interested(chunk):
-        raise NotImplemented
+        return True
 
     @classmethod
     def parse(kls, chunk, morgue):
@@ -33,5 +35,5 @@ class ChunkParser(object):
         elif hasattr(kls, '_parse_with_morgue'):
             return kls._parse_with_morgue(chunk, morgue)
         else:
-            raise NotImplemented
+            raise NotImplementedError()
 

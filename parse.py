@@ -42,7 +42,8 @@ if __name__ == '__main__':
                 try:
                     morg = Morgue(f)
                 except RoutineCoronerException as e:
-                    skips[e.__class__.__name__] += 1
+                    key = getattr(e, 'key', e.__class__.__name__)
+                    skips[key] += 1
                 except Exception as e:
                     print "Unhandled {} in file {}. Version={}".format(
                             e.__class__.__name__, getattr(e, 'fname', 'UNKNOWN_FNAME'), 
@@ -55,20 +56,28 @@ if __name__ == '__main__':
                     if hasattr(e, 'trace'):
                         print "Original trace: {}".format(e.trace)
                     if not SOFT_ERRORS:
+                        if hasattr(e, 'fname'):
+                            # This really helps debugging, since it means I don't
+                            # have to transcribe long strings of random digits from
+                            # morgue filenames.
+                            dst = 'badmorgue.txt'
+                            print "Copying offending file to {}".format(dst)
+                            os.system('cp {} {}'.format(e.fname, dst))
                         raise e
-                    skips[e.__class__.__name__] += 1
+                    key = getattr(e, 'key', e.__class__.__name__)
+                    skips[key] += 1
                 else:
                     collector.add_morgue(morg)
                     niters += 1
             
-                if (collector.gid % 1000) == 0:
+                if niters and (niters % 1000) == 0:
                     print 'i={} '.format(collector.gid),
 
                 if (ROW_LIMIT and niters >= ROW_LIMIT):
                     done = True
                     break
 
-                if (niters % FLUSH_EVERY) == 0 and SAVE:
+                if niters and (niters % FLUSH_EVERY) == 0 and SAVE:
                     print "Flushing {} rows to hdfstore".format(FLUSH_EVERY)
                     collector.flush(store, flush_ancillary=FLUSH_ANCILLARY)
 

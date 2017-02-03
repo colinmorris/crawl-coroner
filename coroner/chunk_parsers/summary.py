@@ -33,9 +33,11 @@ class SummaryParser(ChunkParser):
         parts = combo.split()
         if len(parts) == 2:
             sp, bg = parts
-        elif parts[0] in crawl_data.SPECIES:
+        elif parts[0] in crawl_data.CANON_SPECIES:
             sp = parts[0]
             bg = ' '.join(parts[1:])
+        elif parts[0] in crawl_data.WEIRD_SPECIES:
+            raise ExperimentalComboException
         else:
             sp = ' '.join(parts[:2])
             bg = ' '.join(parts[2:])
@@ -100,6 +102,8 @@ class SummaryParser(ChunkParser):
                     # Dying to a monster's poison is maybe not really worth
                     # distinguishing from the general case of dying to a monster
                     'succumbed to',
+                    # I guess the same goes for sticky flame
+                    'burnt to a crisp',
                     'incinerated by',
                     'impaled on', 'headbutted by', 'rolled over by'
             ]
@@ -130,7 +134,8 @@ class SummaryParser(ChunkParser):
                 howdied = 'starved'
             elif line == 'asphyxiated':
                 howdied = 'asphyxiated'
-            elif line == 'drowned' or line == 'took a swim in molten lava':
+            elif (line == 'drowned' or line == 'took a swim in molten lava'
+                    or line == 'turned to ash by lava'):
                 howdied = 'drowned'
             elif (line == 'forgot to exist' or line == 'slipped on a banana peel'
                     or line == 'forgot to breathe'):

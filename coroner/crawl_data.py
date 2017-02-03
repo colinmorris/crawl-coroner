@@ -50,7 +50,7 @@ def lookup_fancy_god_name(name):
         return RENAMED_GODS[name]
     if name == 'warmaster okawaru':
         return 'okawaru'
-    if name == 'the xom-meister': # really?
+    if name.startswith('the xom-meister'): # really?
         return 'xom'
     parts = name.split()
     if parts[0] in GODS:
