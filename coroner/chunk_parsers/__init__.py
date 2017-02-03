@@ -22,3 +22,6 @@ PARSERS = [
 # Not a big deal for now, but adding more parsers for optional chunks
 # will quickly lead to problems as pile-ups of unsatisfied optional
 # parsers form at the front of the line.
+
+# TODO: It turns out there can be a LOT of variability in order in some cases.
+# I'm seeing some cases where skills/branches come before youwere/youvisited/gold

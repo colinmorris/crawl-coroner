@@ -14,6 +14,7 @@ class StatsTableParser(ChunkParser):
 
     @staticmethod
     def _parse(lines):
+        # TODO: A common variety of parsing error comes from values that look like "God: $foo \d\d". Should be easy to handle.
         godline = lines[1]
         parts = godline.split()
         try:

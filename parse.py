@@ -17,7 +17,9 @@ SOFT_ERRORS = 1
 
 SAVE = 1
 
-FLUSH_EVERY = 300000
+COPY_BADMORGUES = 0
+
+FLUSH_EVERY = 400000
 FLUSH_ANCILLARY = 0
 
 MORGUE_FNAME = 'morgue.h5'
@@ -64,6 +66,16 @@ if __name__ == '__main__':
                             print "Copying offending file to {}".format(dst)
                             os.system('cp {} {}'.format(e.fname, dst))
                         raise e
+
+                    if COPY_BADMORGUES:
+                        dst = 'badmorgues/{}.txt'.format(niters)
+                        with open(dst, 'w') as f:
+                            if e.message:
+                                f.write(e.message + '\n')
+                            f.write(e.trace+'\n')
+                        os.system('cat {} >> {}'.format(e.fname, dst))
+
+
                     key = getattr(e, 'key', e.__class__.__name__)
                     skips[key] += 1
                 else:

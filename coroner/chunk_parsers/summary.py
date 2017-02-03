@@ -36,15 +36,17 @@ class SummaryParser(ChunkParser):
         elif parts[0] in crawl_data.CANON_SPECIES:
             sp = parts[0]
             bg = ' '.join(parts[1:])
+        # Was renamed in 0.10
+        elif parts[0] == 'kenku':
+            sp = 'tengu'
+            bg = ' '.join(parts[1:])
         elif parts[0] in crawl_data.WEIRD_SPECIES:
             raise ExperimentalComboException
         else:
             sp = ' '.join(parts[:2])
             bg = ' '.join(parts[2:])
-        # Was renamed in 0.10
         if sp == 'kenku':
             sp = 'tengu'
-
         if sp not in crawl_data.CANON_SPECIES:
             # Not a canonical species. Hopefully it's a devil we know.
             assert sp in crawl_data.WEIRD_SPECIES, "Unrecognized species: {}".format(sp)

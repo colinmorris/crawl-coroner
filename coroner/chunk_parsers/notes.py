@@ -29,7 +29,8 @@ class NotesParser(ChunkParser):
             try:
                 turn, place, note = [text.strip() for text in noteline.split('|', 2)]
             except ValueError:
-                print "~Warning: unparseable note line in {}:\n{}".format(
+                if noteline:
+                    print "~Warning: unparseable note line in {}:\n{}".format(
                         morgue.f.name, noteline)
                 #raise Exception("Unparseable note line: {!r}".format(noteline))
             # Bot?
@@ -76,4 +77,4 @@ class NotesParser(ChunkParser):
         yield 'bot', bot
         if morgue.name in morgue.bots and not bot:
             print ("WARNING: {} was in list of known bots, but seemed not to"
-                +" be botting this game: {}").format(morgue.name, noteline)
+                +" be botting this game: {}").format(morgue.name, morgue.f.name)
