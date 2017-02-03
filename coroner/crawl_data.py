@@ -54,7 +54,7 @@ def lookup_fancy_god_name(name):
         return 'xom'
     parts = name.split()
     if parts[0] in GODS:
-        return name[0]
+        return parts[0]
     if parts[0] in RENAMED_GODS:
         return RENAMED_GODS[parts[0]]
     binomial = ' '.join(parts[:2])
@@ -116,3 +116,7 @@ COLUMN_TO_CATEGORIES = {
     'howdied':      CANON_HOWDIED,
 }
 
+COLUMN_TO_ORDERED_CATEGORIES = {
+    # will pandas let me get away with heterogeneous columns?
+    'whereconverted':   [1, 2, 3, 4, 5, 6, 7, 8, 9, 'temple', 'other']
+}
