@@ -112,7 +112,7 @@ COLUMN_TO_CATEGORIES = {
     'god':          _god_cats,
     'first_conversion': _god_cats,
     'wheredied':    CANON_WD,
-    'hunger':       HUNGER_LINES,
+    'hunger':       HUNGER_LINES.values(),
     'howdied':      CANON_HOWDIED,
 }
 
