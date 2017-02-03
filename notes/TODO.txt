@@ -1,3 +1,8 @@
+Move notebook helper stuff into its own package, for the sake of tidiness?
+
+Milli-optimization: make categories for some more int columns that take on a small
+number of values (those representing dungeon depths, player level, etc.)
+
 Parse hp. Useful to infer reasons for quitting (how often do players just quit
 when they're a turn from death, vs. for other reasons)
 
