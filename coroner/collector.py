@@ -75,8 +75,14 @@ class MorgueCollector(object):
 
 
     def gameframe(self):
+        """Return a dataframe with currently accumulated per-game data (since
+        last flush). This is a cleaned/categorized version of the dict representation,
+        which includes columns that will get partitioned into 'side tables' (e.g. skill_*),
+        so its columns are a superset of the core 'games' table that's ultimately stored
+        in hdf5."""
+        offset = self._lastflushed_id + 1
         frame = pd.DataFrame(self.game_rows, 
-                index=range(self._lastflushed_id+1, len(self.game_rows))
+                index=range(offset, offset+len(self.game_rows))
         )
         for intcol in {'nrunes', 'gold_spent', 'gold_collected'}:
             frame[intcol].fillna(0, inplace=1)
