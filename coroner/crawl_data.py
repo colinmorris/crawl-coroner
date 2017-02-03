@@ -117,6 +117,6 @@ COLUMN_TO_CATEGORIES = {
 }
 
 COLUMN_TO_ORDERED_CATEGORIES = {
-    # will pandas let me get away with heterogeneous columns?
-    'whereconverted':   [1, 2, 3, 4, 5, 6, 7, 8, 9, 'temple', 'other']
+    'whereconverted':   ['d:1', 'd:2', 'd:3', 'd:4', 'd:5', 'd:6', 'd:7', 'd:8', 'd:9', 
+        'temple', 'other']
 }

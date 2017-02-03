@@ -98,7 +98,13 @@ class MorgueCollector(object):
                         + "after converting column {} to category.\n~~~~~~~").format(
                                 nulls0, nulls1, col)
         for col, cats in crawl_data.COLUMN_TO_ORDERED_CATEGORIES.iteritems():
+            nulls0 = frame[col].isnull().sum()
             frame[col] = frame[col].astype('category', categories=cats, ordered=True)
+            nulls1 = frame[col].isnull().sum()
+            if nulls1 != nulls0:
+                print ("~~~~~~WARNING~~~~~\nWent from {} null values to {} "
+                        + "after converting column {} to category.\n~~~~~~~").format(
+                                nulls0, nulls1, col)
 
         versions = [0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20]
         frame['version'] = frame['version'].astype("category", categories=versions,

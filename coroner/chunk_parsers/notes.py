@@ -42,8 +42,8 @@ class NotesParser(ChunkParser):
                 morgue.bots.add(morgue.name)
 
             # Reached temple?
-            if noteline == 'found a staircase to the ecumenical temple.':
-                assert place.startswith('D:'), noteline
+            if note == 'found a staircase to the ecumenical temple.':
+                assert place.startswith('d:'), noteline
                 temple_lvl = int(place[2:])
                 yield 'temple_depth', temple_lvl
                 assert plvl is not None, "Found temple before reaching xl 1?"
@@ -73,7 +73,7 @@ class NotesParser(ChunkParser):
                     if lvl > 9:
                         where = 'other'
                     else:
-                        where = lvl
+                        where = place
                 else:
                     where = 'other'
                 yield 'whereconverted', where
