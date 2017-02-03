@@ -34,18 +34,21 @@ class MorgueCollector(object):
                 - XXX: what does this look like for non-core tables?
             - append to the appropriate key in the store
         """
-        df = self.gameframe()
-        cols = df.columns
-        table_to_cols = {'games': None} # Games gets all the leftovers
-        for (prefix, table) in schema.PREFIX_TO_SIDE_TABLE.iteritems():
-            table_to_cols[table] = [col for col in cols if col.startswith(prefix)]
-        # TODO: Update df loading code.
-        # TODO: May want to actually specify some data columns later so we can
-        # use hdf to apply some simple where conditions when loading a frame
-        # (e.g. filtering by bot is a useful one, or if we add a derived column
-        # for 'legitness')
-        store.append_to_multiple(table_to_cols, df, 'games', data_columns=[])
-        self.game_rows = []
+        # If we've accumulated any game data since the last flush, append it
+        if self.game_rows: 
+            df = self.gameframe()
+            self._lastflushed_id = self.gid - 1 
+            cols = df.columns
+            table_to_cols = {'games': None} # Games gets all the leftovers
+            for (prefix, table) in schema.PREFIX_TO_SIDE_TABLE.iteritems():
+                table_to_cols[table] = [col for col in cols if col.startswith(prefix)]
+            # TODO: Update df loading code.
+            # TODO: May want to actually specify some data columns later so we can
+            # use hdf to apply some simple where conditions when loading a frame
+            # (e.g. filtering by bot is a useful one, or if we add a derived column
+            # for 'legitness')
+            store.append_to_multiple(table_to_cols, df, 'games', data_columns=[])
+            self.game_rows = []
     
         # Players. (Might just be better off pickling a dict or something?)
         if final:
