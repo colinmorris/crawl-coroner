@@ -83,6 +83,9 @@ class MorgueCollector(object):
             elif col.startswith('skill_'):
                 frame[col].fillna(0.0, inplace=1)
 
+        # Specifying the full set of possible categories here turns out to be 
+        # pretty important because pandas pitches a fit if you try to append
+        # dataframes whose columns have different category values.
         for col, cats in crawl_data.COLUMN_TO_CATEGORIES.iteritems():
             frame[col] = frame[col].astype('category', categories=cats)
 
