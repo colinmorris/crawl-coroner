@@ -19,7 +19,14 @@ SAVE = 1
 
 COPY_BADMORGUES = 0
 
-FLUSH_EVERY = 400000
+# XXX: Sigh. The periodic flushing thing mostly works fine, except you can get 
+# in an unlucky situation where your flushing period ~almost~ divides your 
+# number of morgues, such that your final flush() is only flushing a tiny 
+# number of games. If there's a column missing (e.g. visited_wizlab) from all 
+# those rows, then trying to append will throw an error. 
+# For now, let's just do it all in one big wack. Should be not too bad as 
+# long as I'm running this on a reasonably beefy ec2 instance.
+FLUSH_EVERY = 0
 FLUSH_ANCILLARY = 0
 
 MORGUE_FNAME = 'morgue.h5'
@@ -89,7 +96,7 @@ if __name__ == '__main__':
                     done = True
                     break
 
-                if niters and (niters % FLUSH_EVERY) == 0 and SAVE:
+                if FLUSH_EVERY and niters and (niters % FLUSH_EVERY) == 0 and SAVE:
                     print "Flushing {} rows to hdfstore".format(FLUSH_EVERY)
                     collector.flush(store, flush_ancillary=FLUSH_ANCILLARY)
 
@@ -110,6 +117,9 @@ if __name__ == '__main__':
     print "Skips: {}".format(skips)
 
     with open('known_bots.txt', 'w') as f:
-        # TODO: should probably go on collector, not Morgue
+        # TODO: should probably go on collector, not Morgue 
+        # Also this kind of thing won't be necessary once you store a mapping
+        # from game id to morgue filename. Actually, it's not even necessary now,
+        # # cause you're storing pid
         f.write('\n'.join(list(Morgue.bots)) + '\n')
 
