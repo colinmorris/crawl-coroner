@@ -6,6 +6,26 @@ Some questions I'd like to be able to answer with the data. (These are helpful i
 > gold earned/spent (scatterplot).
     hypothesis: more skilled players are more liberal about spending their gold.
 
+per-player questions...
+    how many players are monomaniacs wrt the species/bgs they play? 
+        what species/bgs do players devote themselves to?
+        any specific funny example?
+    dist of games played per player
+    scatter #games vs. #wins (or hexbin)
+    counts of players according to certain criteria wrt experience/skill, e.g.
+        - 0 wins, at least n games
+          - most games played without a win?
+        - >0 wins
+        - >0 15-rune wins
+        - >n games, >x% win rate
+
+'amateur-friendly' species/bgs/gods
+    which choices correspond to the highest win rates among players who can win the game, but just barely?
+    i.e. players with a low #wins/win%.
+
+most popular species/bgs/gods for first wins?
+    (with caveat that we don't know if they have a previous win locally, or on another server/username)
+
 branch order!
 
 > shields. who uses em? who trains em?

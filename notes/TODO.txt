@@ -1,3 +1,6 @@
+Parse hp. Useful to infer reasons for quitting (how often do players just quit
+when they're a turn from death, vs. for other reasons)
+
 Re-perform analysis restricted to players who have won at least one game.
     Also can try paired tests.
 
