@@ -17,3 +17,5 @@ PREFIX_TO_SIDE_TABLE = {
 
 # XXX
 DATA_COLUMNS = {'legit'}
+
+# TODO: move columns_to_categories here from crawl_data

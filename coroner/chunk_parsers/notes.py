@@ -55,12 +55,28 @@ class NotesParser(ChunkParser):
                 plvl = int(m.group(1))
 
             # Converted?
+            # TODO: this conversion info really belongs in a separate table.
+            # then we can easily capture the where/what/when of each religious
+            # event in a player's lifetime
             worship_prefix = 'became a worshipper of '
             if note.startswith(worship_prefix):
                 conversions += 1
+                if conversions > 1:
+                    continue
                 fancyname = note[len(worship_prefix):]
                 god = crawl_data.lookup_fancy_god_name(fancyname)
                 yield 'first_conversion', god
+                if place == 'temple':
+                    where = 'temple'
+                elif place.startswith('d:'):
+                    lvl = int(place[2:])
+                    if lvl > 9:
+                        where = 'other'
+                    else:
+                        where = lvl
+                else:
+                    where = 'other'
+                yield 'whereconverted', where
 
             # Got a rune?
             m = re.match('got a (\w+) rune of zot', note)

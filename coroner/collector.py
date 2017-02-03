@@ -87,8 +87,18 @@ class MorgueCollector(object):
         # Specifying the full set of possible categories here turns out to be 
         # pretty important because pandas pitches a fit if you try to append
         # dataframes whose columns have different category values.
+        # TODO: be more defensive about NaNing invalid column values. For some
+        # columns, it should never happen.
         for col, cats in crawl_data.COLUMN_TO_CATEGORIES.iteritems():
+            nulls0 = frame[col].isnull().sum()
             frame[col] = frame[col].astype('category', categories=cats)
+            nulls1 = frame[col].isnull().sum()
+            if nulls1 != nulls0:
+                print ("~~~~~~WARNING~~~~~\nWent from {} null values to {} "
+                        + "after converting column {} to category.\n~~~~~~~").format(
+                                nulls0, nulls1, col)
+        for col, cats in crawl_data.COLUMN_TO_ORDERED_CATEGORIES.iteritems():
+            frame[col] = frame[col].astype('category', categories=cats, ordered=True)
 
         versions = [0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20]
         frame['version'] = frame['version'].astype("category", categories=versions,
