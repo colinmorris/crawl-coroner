@@ -6,6 +6,11 @@ STORE_FNAME = 'morgue.h5'
 
 _STORE = None
 
+def load_store():
+    global _STORE
+    if _STORE is None:
+        _STORE = pd.HDFStore(STORE_FNAME)
+    return _STORE
 
 def load_games(legit=True, extra_tables=[], n=None):
     global _STORE
