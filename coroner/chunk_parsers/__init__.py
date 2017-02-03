@@ -7,10 +7,18 @@ from skills import SkillsParser
 from stats_table import StatsTableParser
 from youvisited import YouVisitedParser
 from youwere import YouWereParser
+from gold import GoldParser
 
-PARSERS = [SummaryParser, FirstLineParser, BranchParser, NotesParser, SkillsParser,
-        StatsTableParser, YouVisitedParser, YouWereParser]
+# Ordered from approx beginning to end of file.
+PARSERS = [
+        FirstLineParser, SummaryParser, StatsTableParser, 
+        # interchangeable?
+        YouWereParser, YouVisitedParser, GoldParser, 
+        # interchangeable?
+        SkillsParser, BranchParser, NotesParser, 
+]
 
-PARSERS.sort(key=lambda parser: parser.order)
-# Order:
-#   firstline, summary, stats_table youwere, youvisited, skills, branches, notes
+# TODO: Need to define some strict ordering between groups of chunks.
+# Not a big deal for now, but adding more parsers for optional chunks
+# will quickly lead to problems as pile-ups of unsatisfied optional
+# parsers form at the front of the line.

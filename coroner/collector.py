@@ -75,7 +75,8 @@ class MorgueCollector(object):
         frame = pd.DataFrame(self.game_rows, 
                 index=range(self._lastflushed_id+1, len(self.game_rows))
         )
-        frame['nrunes'].fillna(0, inplace=1)
+        for intcol in {'nrunes', 'gold_spent', 'gold_collected'}:
+            frame[intcol].fillna(0, inplace=1)
         for col in frame.columns:
             boolean_prefixes = ['rune_', 'visited_', 'saw_']
             if any(col.startswith(pre) for pre in boolean_prefixes):

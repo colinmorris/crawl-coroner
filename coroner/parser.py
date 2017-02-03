@@ -48,7 +48,12 @@ class Morgue(object):
             try:
                 chunk = self.next_chunk()
             except ChunkExhaustionException as e:
-                dormant = {PARSERS[i].__name__ for i in self.unactivated_parser_indices}
+                # Filter out optional parsers
+                dormant = {PARSERS[i].__name__ for i in self.unactivated_parser_indices
+                        if not PARSERS[i].optional
+                }
+                if not dormant:
+                    break
                 # It happens pretty often that we can't find these. nbd.
                 often_missing = {'BranchParser', 'NotesParser'}
                 if dormant.issubset(often_missing):

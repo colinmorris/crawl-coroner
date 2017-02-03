@@ -16,14 +16,13 @@ for each chunk in the morgue file...
 Maaaaybe these should even live in a separate sub-package?
 """
 class ChunkParser(object):
-    # If parserA.order < parserB.order, then the chunk that A is interested
-    # in usually comes before the one that B is interested in
-    # TODO: Maybe this should be coordinated at a higher level, rather than
-    # trying to keep these numbers in sync across a bunch of modules
+    # DEPRECATED
     order = -1
     # TODO: Might want to define level of 'out of order tolerance' for
     # each parser?
+    # shy => may yield no tuples for an interesting chunk
     shy = False
+    optional = False
     @staticmethod
     def interested(chunk):
         return True
