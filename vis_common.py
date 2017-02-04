@@ -1,4 +1,3 @@
-from matplotlib import pyplot as plt
 import pandas as pd
 
 # TODO: Some kind of shared config file with parse.py etc.
