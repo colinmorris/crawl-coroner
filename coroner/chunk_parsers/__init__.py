@@ -8,6 +8,8 @@ from stats_table import StatsTableParser
 from youvisited import YouVisitedParser
 from youwere import YouWereParser
 from gold import GoldParser
+from skill_progression_table import SkillProgressionTableParser
+from status import StatusParser
 
 from parser_stable import ChunkParserStable
 
@@ -18,8 +20,10 @@ _PARSERS = [
         [FirstLineParser], 
         [SummaryParser], 
         [StatsTableParser], 
+        [StatusParser],
         [SkillsParser, BranchParser, YouWereParser, YouVisitedParser, GoldParser,],
-        [NotesParser], 
+        [NotesParser],
+        [SkillProgressionTableParser],
 ]
 
 def get_parser_stable():

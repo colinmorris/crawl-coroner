@@ -41,9 +41,22 @@ class Morgue(object):
                 chunk = self.next_chunk()
             except ChunkExhaustionException as e:
                 parser_stable.check_satisfaction()
+                # If the above check didn't raise an exception, then our parsers
+                # were basically done (i.e. the only remaining unactivated ones
+                # were marked as optional)
+                return
                 
-            for (col, value) in parser_stable.parse_chunk(chunk, self):
-                self.setcol(col, value)
+            for k, v in parser_stable.parse_chunk(chunk, self):
+                # Parsers may yield a (str, dict) tuple, where the key
+                # is the name of an ancillary table, and the value is
+                # the dict representation of a whole row for that table
+                if isinstance(v, dict):
+                    self.addrow(v, k)
+                # The default behaviour is to yield a (column, scalar) tuple
+                # corresponding to a column in the main games table
+                else:
+                    col, value = k, v
+                    self.setcol(col, value)
 
 
     def setcol(self, col, value, table='game'):

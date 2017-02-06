@@ -60,17 +60,15 @@ class MorgueCollector(object):
                 store.append(table, df)
 
     def ancillary_frame(self, table):
+        # TODO: unify some of the logic shared with gameframe()?
         rows = self.tables_to_rows[table]
         df = pd.DataFrame(rows)
-        # TODO: less ad-hoc structure for defining per-table cleaning rules
-        if table == 'runes':
-            df['order'] = df['order'].astype('category', categories=range(1,16),
-                    ordered=True)
-            df['rune'] = df['rune'].astype('category', 
-                    categories=crawl_data.RUNES)
-        else:
-            print "~~WARNING: No data cleaning rules defined for "\
-                    + "ancillary table {}".format(table)
+        # TODO: be defensive.
+        for col, cats in schema.COLUMN_TO_CATEGORIES.get(table, []):
+            df[col] = df[col].astype('category', categories=cats)
+        for col, cats in schema.COLUMN_TO_ORDERED_CATEGORIES.get(table, []):
+            df[col] = df[col].astype('category', categories=cats, ordered=True)
+
         return df
 
 
@@ -98,7 +96,7 @@ class MorgueCollector(object):
         # dataframes whose columns have different category values.
         # TODO: be more defensive about NaNing invalid column values. For some
         # columns, it should never happen.
-        for col, cats in crawl_data.COLUMN_TO_CATEGORIES.iteritems():
+        for col, cats in schema.COLUMN_TO_CATEGORIES['games'].iteritems():
             nulls0 = frame[col].isnull().sum()
             frame[col] = frame[col].astype('category', categories=cats)
             nulls1 = frame[col].isnull().sum()
@@ -106,7 +104,7 @@ class MorgueCollector(object):
                 print ("~~~~~~WARNING~~~~~\nWent from {} null values to {} "
                         + "after converting column {} to category.\n~~~~~~~").format(
                                 nulls0, nulls1, col)
-        for col, cats in crawl_data.COLUMN_TO_ORDERED_CATEGORIES.iteritems():
+        for col, cats in schema.COLUMN_TO_ORDERED_CATEGORIES['games'].iteritems():
             nulls0 = frame[col].isnull().sum()
             frame[col] = frame[col].astype('category', categories=cats, ordered=True)
             nulls1 = frame[col].isnull().sum()

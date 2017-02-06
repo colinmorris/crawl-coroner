@@ -1,4 +1,25 @@
+import re
 
+from base import ChunkParser
+from ..coroner_exceptions import *
+from .. import crawl_data
+
+
+class StatusParser(ChunkParser):
+    shy = True
+    @staticmethod
+    def interested(chunk):
+        return chunk[0].startswith('@: ')
+
+    @staticmethod
+    def _parse(chunk):
+        for line in chunk:
+            if line.startswith('0:'):
+                assert 'orb of zot' in line, line
+                yield 'orb', True
+        
+        
+        
 # Just dumping some old code from parse.py here in case I want to adapt it
 # later when parsing statuses and stuff
 """

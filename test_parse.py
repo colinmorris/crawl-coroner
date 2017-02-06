@@ -2,6 +2,7 @@ import os
 import unittest
 from nose2.tools import params
 import nose2
+from collections import Counter
 
 from coroner import MorgueCollector, Morgue
 
@@ -71,9 +72,49 @@ morgue_to_expected = {
             species='mummy',
             nrunes=0,
         ),
+        'scone_drcj.txt': dict(
+            won=True,
+            orb=True,
+            bot=False,
+        ),
+}
+
+morgue_to_progression = {
+    'scone_drcj.txt': {
+        # (XL, skill_lvl)
+        'dodging': [ (3, 2), (14, 3), (16, 4), (17, 5), (24, 11), (25, 13), 
+                    (26, 14), (27, 18), ],
+        'necromancy': [ (26, 1), (27, 8) ],
+        'maces & flails': [],
+        },
 }
 
 class TestMorgueParsing(unittest.TestCase):
+
+    @params(*morgue_to_progression.items())
+    def test_progression_parsing(self, fname, expected):
+        # TODO: refactor out this pattern
+        with open(os.path.join(testmorgue_dir, fname)) as f:
+            rows_per_skill = Counter()
+            morg = Morgue(f, intercept_exceptions=False)
+            skill_rows = morg.ancillary_rows['skill_progression']
+            for row in skill_rows:
+                skillups = expected.get(row['skill'], None)
+                if skillups is None:
+                    continue
+                self.assertIn( (row['xl'], row['lvl']), skillups )
+                rows_per_skill[row['skill']] += 1
+
+            # The above checked for precision (all rows that are present are
+            # valid). This checks for recall (all rows that are valid are
+            # present). Well, assuming no dupes.
+            for skill, skillups in expected.iteritems():
+                self.assertEqual(rows_per_skill[skill], len(skillups),
+                    'Wrong number of rows for skill {} (expected {}, got {})'.format(
+                        skill, len(skillups), rows_per_skill[skill],
+                    )        
+                )
+
 
     @params(*morgue_to_expected.items())
     def test_morguefile(self, fname, expected):

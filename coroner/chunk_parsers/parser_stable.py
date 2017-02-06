@@ -1,5 +1,9 @@
 from ..coroner_exceptions import *
 
+# TODO: would be kind of nice to know about situations where (optional) parser X *would* have 
+# activated out of turn. Cause that should probably be regarded as an error (unlike the 
+# situation where the parser just never gets activated). Maybe expensive to check for this
+# in 'production', but could at least write a test for it.
 class ChunkParserStable(object):
     """A stable of chunk parsers.
     Feed this thing a series of chunks, and it will take care of bookkeeping
@@ -38,8 +42,8 @@ class ChunkParserStable(object):
             for parser in parsers:
                 if not parser.done and parser.interested(chunk):
                     did_something = False
-                    for (k, v) in parser.parse(chunk, morgue):
-                        yield k, v
+                    for thing in parser.parse(chunk, morgue):
+                        yield thing
                         did_something = True
                     # Success: the chunk was consumed, the parser is done
                     if did_something or parser.shy:
