@@ -8,20 +8,26 @@ from stats_table import StatsTableParser
 from youvisited import YouVisitedParser
 from youwere import YouWereParser
 from gold import GoldParser
+from skill_progression_table import SkillProgressionTableParser
+from status import StatusParser
 
-# Ordered from approx beginning to end of file.
-PARSERS = [
-        FirstLineParser, SummaryParser, StatsTableParser, 
-        # interchangeable?
-        YouWereParser, YouVisitedParser, GoldParser, 
-        # interchangeable?
-        SkillsParser, BranchParser, NotesParser, 
+from parser_stable import ChunkParserStable
+
+# Ordered by strict precedence. If group A comes before group B, then no parser
+# in A may be activated after any parser in B. Within a group, parsers can 
+# activate in arbitrary order.
+_PARSERS = [
+        [FirstLineParser], 
+        [SummaryParser], 
+        [StatsTableParser], 
+        [StatusParser],
+        [SkillsParser, BranchParser, YouWereParser, YouVisitedParser, GoldParser,],
+        [NotesParser],
+        [SkillProgressionTableParser],
 ]
 
-# TODO: Need to define some strict ordering between groups of chunks.
-# Not a big deal for now, but adding more parsers for optional chunks
-# will quickly lead to problems as pile-ups of unsatisfied optional
-# parsers form at the front of the line.
+def get_parser_stable():
+    return ChunkParserStable(_PARSERS)
 
-# TODO: It turns out there can be a LOT of variability in order in some cases.
-# I'm seeing some cases where skills/branches come before youwere/youvisited/gold
+__all__ = [get_parser_stable]
+

@@ -6,7 +6,6 @@ from .. import crawl_data
 
 
 class SkillsParser(ChunkParser):
-    order = 5
     @staticmethod
     def interested(chunk):
         return chunk[0] == 'skills:'

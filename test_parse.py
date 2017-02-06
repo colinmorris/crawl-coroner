@@ -2,10 +2,13 @@ import os
 import unittest
 from nose2.tools import params
 import nose2
+from collections import Counter
 
 from coroner import MorgueCollector, Morgue
 
 testmorgue_dir = 'test_morgues'
+
+# TODO: test runes table, and mutations
 
 # Another angle to attack this would be to define some generic invariants that
 # should be true for any morgue file. e.g.
@@ -27,6 +30,7 @@ morgue_to_expected = {
             hp=-15, maxhp=104,
             turns=35422,
             wheredied='snake pit',
+            depth=2,
             hunger='not hungry',
             visited_labyrinth=True,
             # TODO: I can't actually specify a few keys with kwargs syntax
@@ -48,14 +52,76 @@ morgue_to_expected = {
             species='human',
             nrunes=0,
         ),
+        'jumbled.txt': dict(
+            version=0.15,
+            level=7,
+            god='nemelex xobeh',
+            howdied='monster',
+            hp=0,
+            maxhp=50,
+            turns=7148,
+            wheredied='dungeon',
+            depth=3,
+            hunger='not hungry',
+            gold_collected=280,
+            skill_fighting=2.0, skill_axes=6.4, 
+            # Maces are at 0.2 base, 2.6 with cross-training. Should record the base lvl.
+            # oh right, but name has a space
+            bot = False,
+            first_conversion='nemelex xobeh', whereconverted='d:3',
+            won=False,
+            bg='wanderer',
+            species='mummy',
+            nrunes=0,
+        ),
+        'scone_drcj.txt': dict(
+            won=True,
+            orb=True,
+            bot=False,
+        ),
+}
+
+morgue_to_progression = {
+    'scone_drcj.txt': {
+        # (XL, skill_lvl)
+        'dodging': [ (3, 2), (14, 3), (16, 4), (17, 5), (24, 11), (25, 13), 
+                    (26, 14), (27, 18), ],
+        'necromancy': [ (26, 1), (27, 8) ],
+        'maces & flails': [],
+        },
 }
 
 class TestMorgueParsing(unittest.TestCase):
 
+    @params(*morgue_to_progression.items())
+    def test_progression_parsing(self, fname, expected):
+        # TODO: refactor out this pattern
+        with open(os.path.join(testmorgue_dir, fname)) as f:
+            rows_per_skill = Counter()
+            morg = Morgue(f, intercept_exceptions=False)
+            skill_rows = morg.ancillary_rows['skill_progression']
+            for row in skill_rows:
+                skillups = expected.get(row['skill'], None)
+                if skillups is None:
+                    continue
+                self.assertIn( (row['xl'], row['lvl']), skillups )
+                rows_per_skill[row['skill']] += 1
+
+            # The above checked for precision (all rows that are present are
+            # valid). This checks for recall (all rows that are valid are
+            # present). Well, assuming no dupes.
+            for skill, skillups in expected.iteritems():
+                self.assertEqual(rows_per_skill[skill], len(skillups),
+                    'Wrong number of rows for skill {} (expected {}, got {})'.format(
+                        skill, len(skillups), rows_per_skill[skill],
+                    )        
+                )
+
+
     @params(*morgue_to_expected.items())
     def test_morguefile(self, fname, expected):
         with open(os.path.join(testmorgue_dir, fname)) as f:
-            morg = Morgue(f)
+            morg = Morgue(f, intercept_exceptions=False)
             row = morg.game_row
             for (k, expected_val) in expected.iteritems():
                 self.assertIn(k, row)

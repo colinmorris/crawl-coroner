@@ -1,10 +1,19 @@
+To parse:
+    - eating mutagenic flesh, quaffing mut potions
+    - spells...
+    - entering significant places (new branch, rune vault), and level
+      at which that happens, and turncount
+    - action table!
+
+your foo enters the passage of golubria
+
+where do good players put stat points?
+    (seems like stat allocation info isn't available?)
+
 Move notebook helper stuff into its own package, for the sake of tidiness?
 
 Milli-optimization: make categories for some more int columns that take on a small
 number of values (those representing dungeon depths, player level, etc.)
-
-Parse hp. Useful to infer reasons for quitting (how often do players just quit
-when they're a turn from death, vs. for other reasons)
 
 Re-perform analysis restricted to players who have won at least one game.
     Also can try paired tests.
