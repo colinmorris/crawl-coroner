@@ -76,6 +76,9 @@ class MorgueCollector(object):
                             + "after converting column {} to category.\n~~~~~~~").format(
                                     nulls0, nulls1, col)
 
+        for col in schema.BLIND_CATEGORY_COLUMNS.get(table, []):
+            df[col] = df[col].astype('category')
+
         return df
 
     def ancillary_frame(self, table):

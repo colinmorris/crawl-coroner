@@ -6,7 +6,7 @@ from ..coroner_exceptions import *
 from .. import crawl_data
 
 
-Note = namedtuple('Note', 'text place')
+Note = namedtuple('Note', 'text place turn')
 
 # TODO (micro-optimization): we could be a little more efficient by allowing a 
 # parser to say:
@@ -58,7 +58,8 @@ class NotesParser(ChunkParser):
                     print "~Warning: unparseable note line in {}:\n{}".format(
                         morgue.f.name, noteline)
                 continue
-            note = Note(note_text, place) 
+            turn = int(turn)
+            note = Note(note_text, place, turn) 
             for subparser in _NOTEPARSERS:
                 res = subparser(self, note)
                 if res is not None:
@@ -79,6 +80,14 @@ class NotesParser(ChunkParser):
         if not self.bot and re.search('\d+ \|\|\| ', note.text):
             self.bot = True
             self.morgue.bots.add(self.morgue.name)
+
+    @noteparser
+    def mutation(self, note):
+        m = re.match('(gained|lost) mutation:.*\[(.*)\]$', note.text)
+        if m:
+            yield ('mutations', 
+                    {'gained': m.group(1)=='gained', 'source': m.group(2), 'turn': note.turn}
+                  )
 
     @noteparser
     def reached_temple(self, note):

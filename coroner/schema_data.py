@@ -53,6 +53,11 @@ COLUMN_TO_ORDERED_CATEGORIES = {
     },
 }
 
+# Turn these into categories, using all distinct extant values. Dangerous!
+BLIND_CATEGORY_COLUMNS = {
+    'mutations': {'source'},
+}
+
 FILL_COLUMNS = {
     'games': {
         'nrunes': 0,
