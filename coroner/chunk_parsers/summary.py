@@ -148,6 +148,9 @@ class SummaryParser(ChunkParser):
             m = re.match(r, line)
             if m:
                 wheredied = m.group('branch')
+                depth = m.group('lvl')
+                if depth:
+                    yield 'depth', int(depth)
                 won = False
                 break
 
