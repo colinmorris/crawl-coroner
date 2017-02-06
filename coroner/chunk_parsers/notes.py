@@ -93,16 +93,8 @@ class NotesParser(ChunkParser):
     def got_rune(self, note):
         m = re.match('got an? (\w+) rune of zot', note.text)
         if m:
-            # TODO: would prefer to yield some different kind of tuple rather than
-            # doing this kind of inversion of control thing. For one thing, this has
-            # some danger of giving false negatives regarding whether a parser "did
-            # anything". (Not in the case of the notes parser, cause it covers so 
-            # many other things, but it could hyopthetically be a problem elsewhere).
-            self.morgue.addrow(
-                # Use 1-based indexing
-                {'rune': m.group(1), 'order': self.runes_so_far+1},
-                'runes'
-            )
+            # Use 1-based indexing
+            yield 'runes',  {'rune': m.group(1), 'order': self.runes_so_far+1, 'xl': self.plvl}
             self.runes_so_far += 1
 
     @noteparser

@@ -8,7 +8,7 @@ from coroner import MorgueCollector, Morgue
 
 testmorgue_dir = 'test_morgues'
 
-# TODO: Also test ancillary tables.
+# TODO: test runes table 
 
 # Another angle to attack this would be to define some generic invariants that
 # should be true for any morgue file. e.g.
