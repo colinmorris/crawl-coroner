@@ -67,7 +67,7 @@ class ChunkParserStable(object):
             if self.current_group_index == len(self.parser_groups):
                 self.done = True
 
-        elif (all(parser.done or parser.optional for parser in 
+        elif (all((parser.done or parser.optional) for parser in 
                     self.parser_groups[self.current_group_index])
               and self.current_group_index != len(self.parser_groups)-1
         ):
@@ -86,7 +86,7 @@ class ChunkParserStable(object):
                 if not parser.done and not parser.optional:
                     unsat.add(parser.__class__.__name__)
             n1 = len(unsat)
-            if n0 == n1:
+            if n0 == n1 and not all(parser.optional for parser in self.parser_groups[group_idx]):
                 break
 
         if not unsat:

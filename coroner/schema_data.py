@@ -22,6 +22,9 @@ DATA_COLUMNS = {'legit'}
 # We use a dedicated category value for atheists to simplify analysis (and to
 # make it clear that this represents "no god" not "unknown/missing god")
 _god_cats = GODS.union({'none'})
+# Specifying the full set of possible categories here turns out to be 
+# pretty important because pandas pitches a fit if you try to append
+# dataframes whose columns have different category values.
 COLUMN_TO_CATEGORIES = {
     'games': {
         'bg':           CANON_BGS,
@@ -47,5 +50,14 @@ COLUMN_TO_ORDERED_CATEGORIES = {
     },
     'runes': {
         'order': range(1, 16)
+    },
+}
+
+FILL_COLUMNS = {
+    'games': {
+        'nrunes': 0,
+        'gold_spent': 0,
+        'gold_collected': 0,
+        'orb': False,
     },
 }

@@ -9,7 +9,7 @@ class StatusParser(ChunkParser):
     shy = True
     @staticmethod
     def interested(chunk):
-        return chunk[0].startswith('@: ')
+        return chunk[0].startswith('@:')
 
     @staticmethod
     def _parse(chunk):

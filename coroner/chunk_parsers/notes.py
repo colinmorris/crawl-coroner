@@ -106,22 +106,21 @@ class NotesParser(ChunkParser):
         worship_prefix = 'became a worshipper of '
         if note.text.startswith(worship_prefix):
             self.conversions += 1
-            if self.conversions > 1:
-                raise StopIteration
-            fancyname = note.text[len(worship_prefix):]
-            god = crawl_data.lookup_fancy_god_name(fancyname)
-            yield 'first_conversion', god
-            if note.place == 'temple':
-                where = 'temple'
-            elif note.place.startswith('d:'):
-                lvl = int(note.place[2:])
-                if lvl > 9:
-                    where = 'other'
+            if self.conversions == 1:
+                fancyname = note.text[len(worship_prefix):]
+                god = crawl_data.lookup_fancy_god_name(fancyname)
+                yield 'first_conversion', god
+                if note.place == 'temple':
+                    where = 'temple'
+                elif note.place.startswith('d:'):
+                    lvl = int(note.place[2:])
+                    if lvl > 9:
+                        where = 'other'
+                    else:
+                        where = note.place
                 else:
-                    where = note.place
-            else:
-                where = 'other'
-            yield 'whereconverted', where
+                    where = 'other'
+                yield 'whereconverted', where
 
     @noteparser
     def level_up(self, note):

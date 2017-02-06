@@ -59,17 +59,29 @@ class MorgueCollector(object):
                 df = self.ancillary_frame(table)
                 store.append(table, df)
 
-    def ancillary_frame(self, table):
-        # TODO: unify some of the logic shared with gameframe()?
-        rows = self.tables_to_rows[table]
-        df = pd.DataFrame(rows)
-        # TODO: be defensive.
-        for col, cats in schema.COLUMN_TO_CATEGORIES.get(table, []):
-            df[col] = df[col].astype('category', categories=cats)
-        for col, cats in schema.COLUMN_TO_ORDERED_CATEGORIES.get(table, []):
-            df[col] = df[col].astype('category', categories=cats, ordered=True)
+    def clean_frame(self, df, table):
+        for col, fillval in schema.FILL_COLUMNS.get(table, {}).items():
+            df[col].fillna(fillval, inplace=1)
+
+        for lookup, ordered in zip( 
+                (schema.COLUMN_TO_CATEGORIES, schema.COLUMN_TO_ORDERED_CATEGORIES),
+                (False, True)
+        ):
+            for col, cats in lookup.get(table, {}).items():
+                nulls0 = df[col].isnull().sum()
+                df[col] = df[col].astype('category', categories=cats, ordered=ordered)
+                nulls1 = df[col].isnull().sum()
+                if nulls1 != nulls0:
+                    print ("~~~~~~WARNING~~~~~\nWent from {} null values to {} "
+                            + "after converting column {} to category.\n~~~~~~~").format(
+                                    nulls0, nulls1, col)
 
         return df
+
+    def ancillary_frame(self, table):
+        rows = self.tables_to_rows[table]
+        df = pd.DataFrame(rows)
+        return self.clean_frame(df, table)
 
 
     def gameframe(self):
@@ -82,37 +94,15 @@ class MorgueCollector(object):
         frame = pd.DataFrame(self.game_rows, 
                 index=range(offset, offset+len(self.game_rows))
         )
-        for intcol in {'nrunes', 'gold_spent', 'gold_collected'}:
-            frame[intcol].fillna(0, inplace=1)
+        frame = self.clean_frame(frame, 'games')
         for col in frame.columns:
-            boolean_prefixes = ['rune_', 'visited_', 'saw_']
+            boolean_prefixes = ['visited_', 'saw_']
             if any(col.startswith(pre) for pre in boolean_prefixes):
                 frame[col].fillna(False, inplace=1)
             elif col.startswith('skill_'):
                 frame[col].fillna(0.0, inplace=1)
 
-        # Specifying the full set of possible categories here turns out to be 
-        # pretty important because pandas pitches a fit if you try to append
-        # dataframes whose columns have different category values.
-        # TODO: be more defensive about NaNing invalid column values. For some
-        # columns, it should never happen.
-        for col, cats in schema.COLUMN_TO_CATEGORIES['games'].iteritems():
-            nulls0 = frame[col].isnull().sum()
-            frame[col] = frame[col].astype('category', categories=cats)
-            nulls1 = frame[col].isnull().sum()
-            if nulls1 != nulls0:
-                print ("~~~~~~WARNING~~~~~\nWent from {} null values to {} "
-                        + "after converting column {} to category.\n~~~~~~~").format(
-                                nulls0, nulls1, col)
-        for col, cats in schema.COLUMN_TO_ORDERED_CATEGORIES['games'].iteritems():
-            nulls0 = frame[col].isnull().sum()
-            frame[col] = frame[col].astype('category', categories=cats, ordered=True)
-            nulls1 = frame[col].isnull().sum()
-            if nulls1 != nulls0:
-                print ("~~~~~~WARNING~~~~~\nWent from {} null values to {} "
-                        + "after converting column {} to category.\n~~~~~~~").format(
-                                nulls0, nulls1, col)
-
+        # TODO: extract out more of this stuff into schema_data.py
         versions = [0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20]
         frame['version'] = frame['version'].astype("category", categories=versions,
                 ordered=True)
