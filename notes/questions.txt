@@ -1,0 +1,142 @@
+Some questions I'd like to be able to answer with the data. (These are helpful in deciding what fields to prioritize adding to the parser)
+
+> prefix -> this is implementable with currently parsed data
+>> implemented in notebook
+
+> gold earned/spent (scatterplot).
+    hypothesis: more skilled players are more liberal about spending their gold.
+
+skill distribution, differences among players of different skill levels
+    hypotheses...
+        skilled players put more points in defensive skills
+        skilled players are more likely to diversify 
+        unskilled players are more likely to max a weapon skill early
+
+    tackle this with regression? predict level of skill X given {plvl, bg,
+    species(?), player_winrate}. Or predicted player_winrate given {plvl, bg,
+    species, skill_level_X}. Are these exactly equivalent? (Maybe also add
+    {won?, nrunes} as predictors? Cause there might be a lot of variance around
+    XL 27, because of end-game shenanigans. Ideally would just combine these
+    into total XP earned, but that number isn't available to use.
+        The first version of this is maybe a tiny bit more tricky, cause would
+        want to account for the fact that skill must be in range [0,27]. Need 
+        to use some kind of generalized linear model?
+TODO: it'd be really useful to parse skill progression, rather than
+just skill levels at time of death/winning. Could use the table
+or just parse level ups from notes.
+
+
+consumable usage
+    at what rate do players die while having blink scrolls, tele scrolls, heal wounds, etc.
+        in their inventory?
+    do skilled players identify their consumables earlier in the game?
+
+per-player questions...
+    how many players are monomaniacs wrt the species/bgs they play? 
+        what species/bgs do players devote themselves to?
+        any specific funny example?
+    dist of games played per player
+    scatter #games vs. #wins (or hexbin)
+    counts of players according to certain criteria wrt experience/skill, e.g.
+        - 0 wins, at least n games
+          - most games played without a win?
+        - >0 wins
+        - >0 15-rune wins
+        - >n games, >x% win rate
+
+'amateur-friendly' species/bgs/gods
+    which choices correspond to the highest win rates among players who can win the game, but just barely?
+    i.e. players with a low #wins/win%.
+
+most popular species/bgs/gods for first wins?
+    (with caveat that we don't know if they have a previous win locally, or on another server/username)
+
+branch order!
+
+> shields. who uses em? who trains em?
+
+Is it worth it to do Elven Halls?
+
+> Temple diving. How often do (good) players do it? How does it work out for them?
+
+Ranking demonspawn mutations.
+
+What do (good) players tend to use acquirement on?
+    Looks like this information might not actually be recorded in morgue files. :(
+
+What do (good) players tend to buy from shops?
+
+>>scatter plot of #turns against wall clock time
+
+>How popular is each species/bg combo?
+>How winning is each species/bg combo?
+    how to visualize this is an interesting problem (especially if we want to 
+    show popularity and winrate simultaneously)
+    maybe a heatmap?
+        if you wanted simultaneous visualization, you could maybe have a circle/square
+        at each (species, bg) cell, whose size is proportional to (log) pick rate
+        and whose colour reflects win rate.
+
+> How is your success rate affected by which S-branches you get?
+
+>>Differential success rates for different colours of draconians!
+    interesting to verify that colours are distributed uniformly
+    also, lol, interesting to see suicides per colour. Indication of which colours people scum to get, and which they think are hopeless.
+    >>draconians get a colour at lvl 7. Is there a spike in deaths at that level?
+% version
+
+>>Distribution of deaths across player levels.
+    Equivalently(?) what % of games are won given that at least level X is attained?
+
+>>dist of deaths by level & branch
+
+>How popular/winning is each god? (Maybe only count godless for winningness)
+    P(win|god), P(god|win)
+    Need to be careful about late game abandonment+conversion, and zealots.
+
+> Which gods do people worship opportunistically? i.e. if they see an overflow altar
+to this god at D:2, they might worship there even though they didn't set out to 
+do so.
+
+How often do (good) players worship at random altars? How does it affect their win rate?
+
+>> How often is each skill non-zero among winning chars?
+> Dist of skill levels among winners, foreach skill.
+    You could finally do a KDE!
+
+>> How often is each skill maxed out?
+
+How popular is each spell among winning chars?
+    P(spell|win), P(win|spell)
+
+>> How often is each rune taken among 3-runer wins?
+
+>> Dist. of #runes across wins.
+
+Top killer monsters (already done).
+[A little tricky]: Top *solo* killers. i.e. where under the map in the morguefile it just says 'You could see X' 
+
+Most cast spells. Most used when memorized ('most spammed').
+
+Most cast spells among winners.
+
+Most unused spells (lowest avg. # casts | spell is memorized)
+
+Which spells do players most often memorize given opportunity (this'd be interesting, but v. hard to calculate)
+
+How much permafood eaten | win? How much permafood left in inventory?
+
+What % of winners drink a potion of mutation or eat mutagenic flesh?
+
+[hard] What do players tend to do when they're about to lose? e.g. drink pots, read scrolls, cast spells
+[hard] what log events are predictive of losing? falling down a shaft, getting paralyzed, etc.
+
+What @statuses are associated with death? e.g. about to teleport, corroded, repel missiles...
+
+>What killers and locations are associated with deaths of characters having 1, 2, 3 runes?
+
+>> How deadly is each portal level (sewer, wizlab, volcano, etc.). Given that I enter a portal of type X, what's the probability that I die there?
+
+Does which floor the temple spawns on affect your chance of winning?
+
+

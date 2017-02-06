@@ -14,6 +14,13 @@ class StatsTableParser(ChunkParser):
 
     @staticmethod
     def _parse(lines):
+        hpline = lines[0]
+        hp_pattern = '(?:health:|hp:?) +(-?\d+)/(\d+)'
+        m = re.match(hp_pattern, hpline)
+        assert m, "Couldn't find current/max hp in line:\n{}".format(hpline)
+        hp, maxhp = map(int, m.groups())
+        yield 'hp', hp
+        yield 'maxhp', maxhp
         # TODO: A common variety of parsing error comes from values that look like "God: $foo \d\d". Should be easy to handle.
         godline = lines[1]
         parts = godline.split()

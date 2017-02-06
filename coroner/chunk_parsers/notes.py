@@ -42,8 +42,8 @@ class NotesParser(ChunkParser):
                 morgue.bots.add(morgue.name)
 
             # Reached temple?
-            if noteline == 'found a staircase to the ecumenical temple.':
-                assert place.startswith('D:'), noteline
+            if note == 'found a staircase to the ecumenical temple.':
+                assert place.startswith('d:'), noteline
                 temple_lvl = int(place[2:])
                 yield 'temple_depth', temple_lvl
                 assert plvl is not None, "Found temple before reaching xl 1?"
@@ -55,15 +55,31 @@ class NotesParser(ChunkParser):
                 plvl = int(m.group(1))
 
             # Converted?
+            # TODO: this conversion info really belongs in a separate table.
+            # then we can easily capture the where/what/when of each religious
+            # event in a player's lifetime
             worship_prefix = 'became a worshipper of '
             if note.startswith(worship_prefix):
                 conversions += 1
+                if conversions > 1:
+                    continue
                 fancyname = note[len(worship_prefix):]
                 god = crawl_data.lookup_fancy_god_name(fancyname)
                 yield 'first_conversion', god
+                if place == 'temple':
+                    where = 'temple'
+                elif place.startswith('d:'):
+                    lvl = int(place[2:])
+                    if lvl > 9:
+                        where = 'other'
+                    else:
+                        where = place
+                else:
+                    where = 'other'
+                yield 'whereconverted', where
 
             # Got a rune?
-            m = re.match('got a (\w+) rune of zot', note)
+            m = re.match('got an? (\w+) rune of zot', note)
             if m:
                 morgue.addrow(
                     # Use 1-based indexing

@@ -1,0 +1,52 @@
+To parse:
+    - skill levels per plvl
+    - eating mutagenic flesh, quaffing mut potions
+    - spells...
+    - were they holding the orb?
+    - at what plvl are runes acquired
+
+your foo enters the passage of golubria
+
+where do good players put stat points?
+
+Should players with only one game be excluded?
+
+Move notebook helper stuff into its own package, for the sake of tidiness?
+
+Milli-optimization: make categories for some more int columns that take on a small
+number of values (those representing dungeon depths, player level, etc.)
+
+Parse hp. Useful to infer reasons for quitting (how often do players just quit
+when they're a turn from death, vs. for other reasons)
+
+Re-perform analysis restricted to players who have won at least one game.
+    Also can try paired tests.
+
+Add argparse niceness to parse.py
+
+Consider adding some sanity checks?
+    Maybe choose a small handful of morguefiles and have a test that parses
+    them and compares the resulting dataframe to expected values given those files.
+    (Probably useful more to help with the process of adding new fields to the parser
+    than as a regression test)
+
+Look into specifying data_columns in hdfstore.put
+
+Sparse boolean indices? e.g. for bots
+
+Use multiple workers to speed up parsing?
+
+Close to half of morgue files get skipped during parsing because they have an old (or unparseable) version string. Might be worth just keeping a list of those so we don't have to bother reading them each time we rerun parsing. Not sure how much i/o accounts for the total time spent.
+
+Consider filtering out development versions? They introduce some weirdness. But then a lot of people play on trunk.
+
+Additional information to parse out to support some questions of interest:
+- Spells memorized
+    - I think stuff like this should def. go in ancillary tables
+- How many monsters were visible when the player died?
+- @statuses
+
+Add a separate dataframe just mapping indices to player name and morgue filename. That way can do further excavation on interesting/suspicious data points.
+
+Look into pandas sparse data structures.
+    Unfortunately can't be saved to hdf5 table format - which is the format that I need to use if I want categorical variables! Why do these memory optimizations need to be at odds with each other? :(

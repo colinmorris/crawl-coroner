@@ -1,0 +1,6 @@
+cd ok, cwd=/rawdata                                      
+Total: 64328 directories, 2605008 files, 0 symlinks                                                                                            
+New: 2605008 files, 0 symlinks
+26533481498 bytes transferred in 360358 seconds (71.9K/s)
+lftp crawl.akrasiac.org:/rawdata> exit
+
