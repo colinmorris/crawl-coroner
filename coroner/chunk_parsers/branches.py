@@ -6,7 +6,6 @@ from .. import crawl_data
 
 
 class BranchParser(ChunkParser):
-    order = 6
     shy = True
     @staticmethod
     def interested(chunk):

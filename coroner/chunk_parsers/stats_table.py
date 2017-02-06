@@ -6,7 +6,6 @@ from .. import crawl_data
 
 
 class StatsTableParser(ChunkParser):
-    order = 2
     @staticmethod
     def interested(chunk):
         prefix_pattern = '(?:health:|hp:?) +-?\d'

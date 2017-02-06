@@ -1,0 +1,210 @@
+ Dungeon Crawl Stone Soup version 0.15-a0-1875-gaca7260 (console) character file.
+
+625 hyperboh the Chopper (level 7, 0/50 HPs)
+             Began as a Mummy Wanderer on July 4, 2014.
+             Was a Follower of Nemelex Xobeh.
+             Slain by jrlans' ghost (11 damage)
+             ... on Level 3 of the Dungeon.
+             The game lasted 00:15:28 (7148 turns).
+
+hyperboh the Chopper (Mummy Wanderer)               Turns: 7148, Time: 00:15:28
+
+HP   0/50        AC 14     Str 15      XL: 7   Next: 23%
+MP   8/8         EV  8     Int 11      God: Nemelex Xobeh [*.....]
+Gold 280         SH  0     Dex 13      Spells:  0 memorised,  6 levels left
+
+rFire  x . .     SeeInvis .     a - +0 war axe
+rCold  + . .     Clarity  .     d - +2 scale mail
+rNeg   + + +     rCorr    .     (no shield)
+rPois  +         rRot     +     e - +2 helmet
+rElec  .         Spirit   .     o - +1 cloak {rPois}
+SustAb .         Warding  .     j - +0 pair of gloves
+rMut   .         Stasis   .     (no boots)
+Gourm  .                        (no amulet)
+MR     .....                    w - ring of wizardry
+                                t - ring of teleport control
+
+@: not resistant to hostile enchantments, extremely unstealthy
+A: no food or potions, fire vulnerability, restore body, cold resistance 1,
+negative energy resistance 3, poison resistance, torment resistance, unbreathing
+a: Draw One, Renounce Religion, Evoke Teleport Control
+
+
+   Skills:
+ - Level 2.0 Fighting
+ * Level 6.4 Axes
+   Level 0.2(2.6) Maces & Flails
+ - Level 2.4 Armour
+ - Level 1.0 Stealth
+   Level 1.0 Shields
+ - Level 1.5 Unarmed Combat
+ - Level 1.0 Evocations
+
+
+You were on level 3 of the Dungeon.
+You worshipped Nemelex Xobeh.
+Nemelex Xobeh was aware of your devotion.
+You were not hungry.
+
+You visited 1 branch of the dungeon, and saw 5 of its levels.
+
+You collected 280 gold pieces.
+
+Inventory:
+
+Hand weapons
+ a - a +0 war axe (weapon)
+ b - a +0 blowgun
+ n - a +1 hand axe
+Missiles
+ i - 17 poisoned needles
+Armour
+ d - a +2 scale mail (worn)
+ e - a +2 helmet (worn)
+ h - a +0 plate armour
+ j - a +0 pair of gloves (worn)
+ o - a +1 cloak of poison resistance (worn)
+   (You took it off Crazy Yiuf on level 4 of the Dungeon)
+Scrolls
+ f - 3 scrolls of remove curse
+ g - 2 scrolls of teleportation
+ m - a scroll of fear
+Jewellery
+ t - a ring of teleport control (left hand)
+   (You found it on level 2 of the Dungeon)
+ w - a ring of wizardry (right hand)
+   (You found it on level 4 of the Dungeon)
+Books
+ c - a book of Enchantments
+Miscellaneous
+ k - a plain deck of escape
+ l - a plain deck of war
+
+
+You had 6 spell levels left.
+You didn't know any spells.
+
+Dungeon Overview and Level Annotations
+
+Branches:
+Dungeon (5/15)            
+Temple: D:4-7       
+
+Altars:
+Elyvilon
+Nemelex Xobeh
+
+Annotations:
+D:2 exclusion: 2 downstairs
+D:3 jrlans' ghost, weakling DrGl
+
+
+Innate Abilities, Weirdness & Mutations
+
+You do not eat or drink.
+Your flesh is vulnerable to fire.
+Your flesh is cold resistant.
+You are immune to negative energy.
+Your system is resistant to poisons.
+You are immune to unholy pain and torment.
+You can survive without breathing.
+
+
+▒▒∙∙▒'▒∙▒▒▒∙∙∙∙∙▒▒▒
+▒∙∙▒▒▒∙▄∙▒▒▒∙∙▒▒▒▒▒▒
+▒∙∙∙▒'▒∙▒▒▒∙∙∙∙∙∙∙∙▒
+▒∙∙∙∙▒▒▒▒▒∙)∙∙∙∙▒▒∙▒
+▒∙∙▒∙∙▒▒▒∙∙∙∙∙∙∙▒▒∙▒
+▒∙∙▒∙∙∙▒∙∙▒∙∙▒∙∙∙▒∙▒
+▒∙∙▒∙∙∙∙∙▒▒∙∙∙∙∙∙▒>▒
+▒∙∙∙W∙∙∙▒▒▒∙∙∙∙∙∙∙∙▒▒
+▒▒▒▒M▒▒▒▒▒▒▒▒▒∙∙∙∙∙∙▒
+   ▒∙∙∙∙∙▒   ▒∙▒∙▒▒∙▒
+   ▒▒▒▒▒∙▒   ▒∙▒∙▒▒∙▒
+       ▒∙▒   ▒∙▒∙∙∙∙∙
+       ▒∙▒▒▒▒▒∙▒∙▒▒∙▒
+       ▒∙∙∙∙∙▒∙▒∙▒▒∙▒
+       ▒▒▒▒▒∙▒∙∙∙∙∙∙▒
+           ▒∙∙∙∙▒∙▒▒▒
+           ▒▒▒▒∙∙∙▒
+
+
+
+Notes
+Turn   | Place    | Note
+--------------------------------------------------------------
+     0 | D:1      | hyperboh, the Mummy Wanderer, began the quest for the Orb.
+     0 | D:1      | Reached XP level 1. HP: 16/16 MP: 1/1
+   131 | D:1      | Reached XP level 2. HP: 13/22 MP: 2/2
+   707 | D:1      | Reached XP level 3. HP: 27/27 MP: 3/3
+  1956 | D:2      | Reached skill level 3 in Axes
+  1956 | D:2      | Reached XP level 4. HP: 22/33 MP: 4/4
+  3244 | D:2      | Reached XP level 5. HP: 31/38 MP: 5/5
+  3402 | D:2      | Reached skill level 4 in Axes
+  3542 | D:3      | Found a sparkling altar of Nemelex Xobeh.
+  3542 | D:3      | Found a white marble altar of Elyvilon.
+  3545 | D:3      | Became a worshipper of Nemelex Xobeh the Trickster
+  3873 | D:3      | Noticed a giant frog
+  3907 | D:3      | Killed a giant frog
+  3907 | D:3      | Reached skill level 5 in Axes
+  3907 | D:3      | Reached XP level 6. HP: 5/44 MP: 7/7
+  4300 | D:3      | Received a gift from Nemelex Xobeh
+  4625 | D:3      | Found a sparkling altar of Nemelex Xobeh.
+  4837 | D:3      | Noticed jrlans' ghost (weakling DrGl)
+  5373 | D:4      | Acquired Nemelex Xobeh's first power
+  5427 | D:4      | Received a gift from Nemelex Xobeh
+  6078 | D:4      | Reached skill level 6 in Axes
+  6078 | D:4      | Reached XP level 7. HP: 18/50 MP: 8/8
+  6468 | D:4      | Noticed Crazy Yiuf
+  6485 | D:4      | Killed Crazy Yiuf
+  6491 | D:4      | --of course
+  6547 | D:5      | Entered Level 5 of the Dungeon
+  7148 | D:3      | Slain by jrlans' ghost
+
+Message History
+
+Jrlans' ghost hits you but does no damage.
+You closely miss jrlans' ghost.
+Jrlans' ghost is moderately damaged.
+Jrlans' ghost hits you but does no damage.
+You hit jrlans' ghost.
+Jrlans' ghost is moderately damaged.
+Jrlans' ghost wails, "You will join me soon!"
+Jrlans' ghost hits you but does no damage.
+You closely miss jrlans' ghost.
+Jrlans' ghost is moderately damaged.
+Jrlans' ghost closely misses you. Jrlans' ghost hits you.
+You miss jrlans' ghost.
+Jrlans' ghost is moderately damaged.
+Jrlans' ghost hits you!
+You closely miss jrlans' ghost.
+Jrlans' ghost is moderately damaged.
+Jrlans' ghost says, "You will never get the ORB!"
+Jrlans' ghost hits you!
+You die...
+Your body disappears without a glow.
+
+Vanquished Creatures
+  An ogre (D:4)
+  A giant frog (D:3)
+  Crazy Yiuf (D:4)
+  An orc priest (D:3)
+  4 orc wizards
+  A gnoll (D:1)
+  16 adders
+  A giant mite (D:3)
+  3 worms
+  An iguana skeleton (D:4)
+  A giant gecko (D:4)
+  12 orcs
+  9 bats
+  6 giant cockroaches
+  9 hobgoblins
+  8 jackals
+  2 quokkas (D:3)
+  7 giant newts
+  10 goblins
+  A goblin skeleton (D:4)
+  10 kobolds
+  9 rats
+114 creatures vanquished.

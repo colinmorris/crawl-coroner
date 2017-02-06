@@ -7,7 +7,6 @@ from ..coroner_exceptions import *
 MAX_UNSUPPORTED_VERSION = StrictVersion('0.9')
 
 class FirstLineParser(ChunkParser):
-    order = 0
     @staticmethod
     def interested(chunk):
         # This is sort of a hack. Obviously we're not interested in all chunks,

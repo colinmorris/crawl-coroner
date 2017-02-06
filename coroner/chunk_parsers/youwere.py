@@ -6,7 +6,6 @@ from .. import crawl_data
 
 
 class YouWereParser(ChunkParser):
-    order = 3
     shy = True
     @staticmethod
     def interested(chunk):

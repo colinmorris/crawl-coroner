@@ -7,6 +7,8 @@ from coroner import MorgueCollector, Morgue
 
 testmorgue_dir = 'test_morgues'
 
+# TODO: Also test ancillary tables.
+
 # Another angle to attack this would be to define some generic invariants that
 # should be true for any morgue file. e.g.
 # - first_conversion and whereconverted should be null/non-null together
@@ -48,6 +50,27 @@ morgue_to_expected = {
             species='human',
             nrunes=0,
         ),
+        'jumbled.txt': dict(
+            version=0.15,
+            level=7,
+            god='nemelex xobeh',
+            howdied='monster',
+            hp=0,
+            maxhp=50,
+            turns=7148,
+            wheredied='dungeon',
+            hunger='not hungry',
+            gold_collected=280,
+            skill_fighting=2.0, skill_axes=6.4, 
+            # Maces are at 0.2 base, 2.6 with cross-training. Should record the base lvl.
+            # oh right, but name has a space
+            bot = False,
+            first_conversion='nemelex xobeh', whereconverted='d:3',
+            won=False,
+            bg='wanderer',
+            species='mummy',
+            nrunes=0,
+        ),
 }
 
 class TestMorgueParsing(unittest.TestCase):
@@ -55,7 +78,7 @@ class TestMorgueParsing(unittest.TestCase):
     @params(*morgue_to_expected.items())
     def test_morguefile(self, fname, expected):
         with open(os.path.join(testmorgue_dir, fname)) as f:
-            morg = Morgue(f)
+            morg = Morgue(f, intercept_exceptions=False)
             row = morg.game_row
             for (k, expected_val) in expected.iteritems():
                 self.assertIn(k, row)

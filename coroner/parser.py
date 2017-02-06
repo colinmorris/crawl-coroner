@@ -3,7 +3,7 @@ from collections import defaultdict
 
 from coroner_exceptions import *
 import chunk_parsers
-from chunk_parsers import PARSERS
+from chunk_parsers import get_parser_stable
 
 
 # TODO: document this new modular structure
@@ -11,16 +11,22 @@ from chunk_parsers import PARSERS
 class Morgue(object):
     # Keep track of seen bots so we can save them to a file at the end for later use
     bots = set()
-    def __init__(self, f):
+    def __init__(self, f, intercept_exceptions=True):
         self.f = f
         self.game_row = {}
         # This is for tables that have 0-to-many rows per game
         self.ancillary_rows = defaultdict(list)
         self.name = None # player name
-        self.unactivated_parser_indices = range(len(PARSERS))
+        if not intercept_exceptions:
+            self.parse()
+            return
         try:
             self.parse()
         except Exception as e:
+            # TODO: This interception of exceptions is kind of awkward. There's
+            # some finagling in parse.py to recover and print the trace of the
+            # original intercepted error, but in the context of e.g. tests, we
+            # end up with uninformative traces.
             e.fname = self.f.name
             e.version = self.game_row.get('version', 'UNK')
             # Unfortunately, it seems like the original line number gets lost
@@ -28,53 +34,17 @@ class Morgue(object):
             e.trace = traceback.format_exc(e)
             raise e
 
-    def next_parsers(self):
-        return [PARSERS[i] for i in self.unactivated_parser_indices[:3]]
-
-    def mark_parser_done(self, parser):
-        i = PARSERS.index(parser)
-        self.unactivated_parser_indices.remove(i)
-
     def parse(self):
-        # TODO: there's a lot more subtlety that could be added here:
-        # - we should probably regard it as an error if certain pairs of parsers
-        #   are woken up out of order
-        # - we should probably bail early if we go through a drought of more than
-        #   n chunks without satisfying parser x. (Though this probably has a pretty
-        #   negligible effect on perf, since morgues that fail to activate all
-        #   parsers should be a tiny minority. For all the others, we're already
-        #   going through all the chunks.)
-        while self.unactivated_parser_indices:
+        parser_stable = get_parser_stable()
+        while not parser_stable.done:
             try:
                 chunk = self.next_chunk()
             except ChunkExhaustionException as e:
-                # Filter out optional parsers
-                dormant = {PARSERS[i].__name__ for i in self.unactivated_parser_indices
-                        if not PARSERS[i].optional
-                }
-                if not dormant:
-                    break
-                # It happens pretty often that we can't find these. nbd.
-                often_missing = {'BranchParser', 'NotesParser'}
-                if dormant.issubset(often_missing):
-                    kls = MissingChunkException
-                else:
-                    kls = CritMissingChunkException
-                raise kls(dormant)
+                parser_stable.check_satisfaction()
+                
+            for (col, value) in parser_stable.parse_chunk(chunk, self):
+                self.setcol(col, value)
 
-            for parser in self.next_parsers():
-                if not parser.interested(chunk):
-                    continue
-                didsomething = False
-                for (col, value) in parser.parse(chunk, self):
-                    didsomething = True
-                    self.setcol(col, value)
-                if didsomething or parser.shy:
-                    self.mark_parser_done(parser)
-                    # This chunk was consumed, so we can move on to the next
-                    break
-                else:
-                    raise ParseException("Parser {} was interested but produced no output".format(parser))
 
     def setcol(self, col, value, table='game'):
         dest = self.game_row if table == 'game' else self.ancillary_rows[table]
