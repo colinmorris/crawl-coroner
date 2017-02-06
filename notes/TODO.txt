@@ -1,3 +1,16 @@
+To parse:
+    - skill levels per plvl
+    - eating mutagenic flesh, quaffing mut potions
+    - spells...
+    - were they holding the orb?
+    - at what plvl are runes acquired
+
+your foo enters the passage of golubria
+
+where do good players put stat points?
+
+Should players with only one game be excluded?
+
 Move notebook helper stuff into its own package, for the sake of tidiness?
 
 Milli-optimization: make categories for some more int columns that take on a small
