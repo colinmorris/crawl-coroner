@@ -1,0 +1,556 @@
+ Dungeon Crawl Stone Soup version 0.19.1-1-g22dce08 (webtiles) character file.
+
+104596 scone the Devastator (level 16, -15/104 HPs)
+             Began as a Human Fire Elementalist on Dec 25, 2016.
+             Was a High Priest of Vehumet.
+             Killed from afar by a shock serpent (19 damage)
+             ... with a bolt of electricity
+             ... on level 2 of the Snake Pit on Dec 31, 2016.
+             The game lasted 05:32:42 (35422 turns).
+
+scone the Devastator (Human Fire Elementalist)     Turns: 35422, Time: 05:32:43
+
+Health: -15/104    AC:  8    Str:  9    XL:     16   Next: 93%
+Magic:  27/41      EV: 15    Int: 25    God:    Vehumet [*****.]
+Gold:   1137       SH:  3    Dex: 15    Spells: 13 memorised, 2 levels left
+
+rFire  . . .      SeeInvis .    y - +2 flail (protect)
+rCold  . . .      Gourm    .    Z - +2 robe {MR+}
+rNeg   . . .      Faith    .    g - +0 buckler {rPois}
+rPois  +          Spirit   .    W - +1 hat {Int+3}
+rElec  .          Reflect  .    v - +0 cloak {rPois}
+rCorr  .          Harm     .    C - +0 pair of gloves
+MR     ++...                    T - +1 pair of boots {Stlth+}
+Stlth  ++++......               D - amulet of Jugaot {RegenMP Int+3}
+                                z - ring of magical power
+                                R - +2 ring of evasion
+
+@: no status effects
+A: horns 1, deformed body, dopey 1, low mp 1, sturdy frame 1
+a: Renounce Religion
+
+
+You were on level 2 of the Snake Pit.
+You worshipped Vehumet.
+Vehumet was extremely pleased with you.
+You were not hungry.
+
+You visited 6 branches of the dungeon, and saw 27 of its levels.
+You also visited: Labyrinth and Ice Cave.
+
+You collected 3079 gold pieces.
+You spent 1942 gold pieces at shops.
+
+Inventory:
+
+Hand Weapons
+ y - a +2 flail of protection (weapon)
+ O - a +2 dagger of distortion
+Armour
+ g - a +0 buckler of poison resistance (worn)
+ t - a +2 robe of fire resistance
+ v - a +0 cloak of poison resistance (worn)
+ C - a +0 pair of gloves (worn)
+ T - a +1 pair of boots of stealth (worn)
+ W - a +1 hat of intelligence (worn)
+ Z - a +2 robe of magic resistance (worn)
+Magical Staves
+ E - an uncursed staff of wizardry
+Jewellery
+ e - a +5 ring of evasion
+ k - an uncursed ring of ice {unknown}
+ z - a ring of magical power (right hand)
+ D - the amulet of Jugaot (around neck) {RegenMP Int+3}
+   (You found it in an ice cave)   
+   
+   [amulet of magic regeneration]
+   
+   It increases your magic regeneration.
+   It affects your intelligence (+3).
+ G - an uncursed ring of resist corrosion
+ Q - the ring "Kufarih" {rC+ Stlth+}
+   (You found it in a labyrinth)   
+   
+   [ring of protection from cold]
+   
+   It protects you from cold.
+   It makes you more stealthy.
+ R - a +2 ring of evasion (left hand)
+ S - an uncursed ring of see invisible
+Wands
+ d - a wand of polymorph (9/24)
+ s - a wand of iceblast (8/15)
+ u - a wand of disintegration (5/24)
+Scrolls
+ a - a scroll of summoning
+ f - a scroll of fear
+ i - 3 scrolls of identify
+ m - a scroll of brand weapon
+ o - 5 scrolls of magic mapping
+ r - 8 scrolls of remove curse
+ F - 10 scrolls of teleportation
+ J - a scroll of holy word
+ K - a scroll of blinking
+Potions
+ b - 4 potions of lignification
+ h - 5 potions of might
+ j - a potion of heal wounds
+ l - a potion of resistance {unknown}
+ w - 3 potions of curing
+ L - 2 potions of agility
+ M - 3 potions of brilliance
+ N - a potion of flight
+ V - 2 potions of haste
+Miscellaneous
+ Y - a lamp of fire
+Comestibles
+ c - 14 bread rations
+ n - a beef jerky
+ p - a chunk of flesh
+ B - 7 fruits
+
+
+   Skills:
+ + Level 3.4 Fighting
+ - Level 2.9 Armour
+ + Level 3.4 Dodging
+ + Level 4.4 Stealth
+ - Level 16.0 Spellcasting
+ + Level 16.4 Conjurations
+ - Level 13.5 Fire Magic
+
+
+You had 2 spell levels left.
+You knew the following spells:
+
+ Your Spells              Type           Power        Failure   Level  Hunger
+a - Flame Tongue          Conj/Fire      #####        0%          1    None
+b - Throw Flame           Conj/Fire      ######       0%          2    None
+c - Conjure Flame         Conj/Fire      #######.     1%          3    None
+d - Sticky Flame          Conj/Fire      #######.     1%          4    None
+e - Fireball              Conj/Fire      #######...   1%          5    None
+f - Sting                 Conj/Pois      ####         1%          1    None
+g - Freeze                Ice            ###.         1%          1    None
+h - Stone Arrow           Conj/Erth      ######       1%          3    None
+i - Fulminant Prism       Conj/Hex       ######....   1%          4    None
+j - Regeneration          Chrm/Necr      ###.......   14%         3    None
+k - Bolt of Draining      Conj/Necr      ######....   1%          5    None
+l - Bolt of Fire          Conj/Fire      #######...   1%          6    ####...
+m - Orb of Destruction    Conj           #######...   1%          7    #####..
+
+
+Dungeon Overview and Level Annotations
+
+Branches:
+Dungeon (14/15)            Temple (1/1) D:6            Lair (6/6) D:10
+ Shoals (1/4) Lair:3        Snake (3/4) Lair:2        Slime (0/5) Lair:6
+    Orc (2/2) D:10            Elf (0/3) Orc:2       
+Vaults: D:13-14     
+
+Altars:
+Dithmenos
+Elyvilon
+Kikubaaqudgha
+Okawaru
+Ru
+Trog
+Vehumet
+Xom
+Yredelemnul
+The Shining One
+
+Shops:
+D:7 [(!*   D:11 ?   D:13 (   Orc:2 [**?
+
+Annotations:
+D:8 exclusion: downstairs
+D:9 exclusion: phantom, Erolcha
+Snake:2 Donald
+
+
+Innate Abilities, Weirdness & Mutations
+
+You have a pair of small horns on your head.
+Armour fits poorly on your strangely shaped body.
+You are dopey. (Int -2)
+Your magical capacity is low. (-10% MP)
+Your movements are slightly less encumbered by armour. (ER -2)
+
+
+Message History
+
+The bolt of electricity hits you!
+* * * LOW HITPOINT WARNING * * *
+The bolt of electricity hits you!
+* * * LOW HITPOINT WARNING * * *
+The bolt of electricity hits the shock serpent.
+The shock serpent completely resists.
+Press: ? - help, v - describe, . - travel
+Here: a shock serpent (severely wounded, covered in liquid flames)
+The floor.
+Unknown command.
+Press: ? - help, v - describe, . - travel
+Here: a shock serpent (severely wounded, covered in liquid flames)
+The floor.
+Unknown command.
+You feel much better. The shock serpent burns!
+The shock serpent shoots out a bolt of lightning at you!
+The bolt of electricity hits you!
+* * * LOW HITPOINT WARNING * * *
+The bolt of electricity hits you!
+You die...
+
+#....##....##.......     #.......
+###..########.....#      ########
+###...######......###############
+........##.............##.......#
+........##.............##........
+........##.............##........
+.^......##.............##........
+........##......S......##.....>..
+........##......@......##........
+........##.............##........
+###############.##.....##########
+###############'###....##########
+.....[.##...##...##....##........
+.......##...##...##....##........
+.......##...##...##....##........
+.......##...##...##....##........
+.......##...##...##....##........
+
+
+You could see a shock serpent (burning).
+
+Vanquished Creatures
+  Gastronok (Lair:3)
+  2 entropy weavers (Lair:5)
+  A minotaur (Lab)
+  Snorg (Orc:1)
+  4 hydras
+  3 naga warriors
+  3 ice dragons
+  4 anacondas
+  Erica (Lair:2)
+  2 shock serpents
+  A queen ant (Lair:5)
+  4 naga sharpshooters
+  Urug (D:10)
+  3 orc high priests (Orc:2)
+  Sonja (Lair:2)
+  8 skeletal warriors
+  A salamander mystic (Snake:2)
+  2 naga ritualists
+  2 unseen horrors
+  6 hill giants
+  A lindwurm (Lair:6)
+  4 orc knights (Orc:2)
+  4 mana vipers (Snake:2)
+  3 manticores
+  An ugly thing (D:11)
+  A cyclops (D:14)
+  5 orc sorcerers
+  4 salamanders (Snake:2)
+  7 elephants
+  A guardian serpent (Snake:1)
+  24 black mambas
+  Psyche (D:10)
+  2 ice statues (IceCv)
+  4 naga magi
+  6 torpor snails (Lair:6)
+  A gargoyle (D:11)
+  4 spiny frogs
+  5 rime drakes
+  6 komodo dragons
+  A merfolk (D:11)
+  5 trolls
+  4 tyrant leeches (Lair:6)
+  8 hornets (Lair:6)
+  Prince Ribbit (Lair:1)
+  8 polar bears (Lair:6)
+  4 two-headed ogres
+  3 slime creatures (D:14)
+  23 blink frogs
+  7 dream sheep (Lair:5)
+  3 raiju (Lair:6)
+  Sigmund (D:6)
+  7 hippogriffs
+  25 yaks
+  4 wraiths
+  A wyvern (Lair:6)
+  Grum (Lair:1)
+  3 basilisks
+  A hungry ghost (D:12)
+  A human (D:14)
+  2 chaos spawn (D:14)
+  7 wargs
+  4 mottled dragons
+  5 soldier ants (Lair:5)
+  16 nagas
+  7 hell hounds (Lair:6)
+  15 water moccasins
+  33 orc warriors
+  11 porcupines
+  3 sky beasts
+  25 ice beasts
+  17 black bears
+  2 phantoms
+  A necrophage (D:10)
+  30 wolves
+  12 ogres
+  6 centaurs
+  11 crocodiles
+  A wyvern zombie (D:12)
+  11 bullfrogs
+  A gnoll sergeant (D:6)
+  A water moccasin zombie (D:11)
+  3 scorpions
+  13 killer bees
+  5 howler monkeys
+  13 electric eels
+  2 crimson imps
+  A centaur zombie (D:7)
+  21 hounds
+  2 quasits (D:7)
+  5 bullfrog zombies
+  A centaur skeleton (D:8)
+  A jelly (D:5)
+  17 orc priests
+  42 orc wizards
+  3 bullfrog skeletons
+  6 iguanas
+  23 worker ants
+  A hound skeleton (D:7)
+  A worker ant zombie (D:11)
+  24 gnolls
+  12 adders
+  A shadow imp (D:10)
+  An ooze (D:3)
+  An adder zombie (D:10)
+  3 adder skeletons
+  A worm (D:3)
+  4 dart slugs (D:1)
+  5 leopard geckos
+  76 orcs
+  4 ball pythons
+  3 giant cockroaches
+  7 goblins
+  3 hobgoblins
+  2 jackals (D:5)
+  6 quokkas
+  6 bats
+  8 frilled lizards
+  9 kobolds
+  6 rats
+  2 plants
+811 creatures vanquished.
+
+Vanquished Creatures (others)
+  A bush (Lair:6)
+  12 fungi
+  38 plants
+51 creatures vanquished.
+
+Grand Total: 862 creatures vanquished
+
+Notes
+Turn   | Place    | Note
+-------+----------+-------------------------------------------
+     0 | D:1      | scone the Human Fire Elementalist began the quest for the Orb.
+     0 | D:1      | Reached XP level 1. HP: 13/13 MP: 3/3
+   239 | D:1      | Reached XP level 2. HP: 19/19 MP: 0/5
+   388 | D:1      | Learned a level 2 spell: Throw Flame
+   491 | D:1      | Reached XP level 3. HP: 24/24 MP: 0/6
+   857 | D:2      | Learned a level 3 spell: Conjure Flame
+  1058 | D:2      | Reached XP level 4. HP: 18/30 MP: 1/7
+  1413 | D:3      | Found a shadowy altar of Dithmenos.
+  2008 | D:3      | Reached XP level 5. HP: 36/36 MP: 5/9
+  2438 | D:3      | Reached XP level 6. HP: 38/42 MP: 3/10
+  3341 | D:5      | Entered Level 5 of the Dungeon
+  3686 | D:4      | Reached skill level 5 in Fire Magic
+  3936 | D:4      | Reached XP level 7. HP: 41/47 MP: 8/13
+  4233 | D:5      | Found a bloodstained altar of Trog.
+  4620 | D:5      | Reached skill level 1 in Fighting
+  5161 | D:6      | Reached XP level 8. HP: 54/54 MP: 2/14
+  5227 | D:6      | Found a staircase to the Ecumenical Temple.
+  5234 | Temple   | Entered the Ecumenical Temple
+  5247 | Temple   | Became a worshipper of Vehumet
+  5337 | D:5      | Gained mutation: Armour fits poorly on your strangely shaped body. [potion of mutation]
+  5337 | D:5      | Gained mutation: You have a pair of small horns on your head. [potion of mutation]
+  5337 | D:5      | Gained mutation: Your movements are slightly less encumbered by armour. (ER -2) [potion of mutation]
+  5570 | D:5      | Learned a level 4 spell: Sticky Flame
+  5679 | D:7      | Found Diczookk's Antique Weapon Boutique.
+  5684 | D:7      | Reached skill level 5 in Spellcasting
+  6428 | D:7      | Found Wyutz's Distillery.
+  6453 | D:7      | Found Janehydu's General Store.
+  6707 | D:7      | Reached skill level 5 in Conjurations
+  6937 | D:7      | Found Daphurhitu's Antique Armour Shoppe.
+  6940 | D:7      | Bought a runed cloak for 315 gold pieces
+  6986 | D:7      | Noticed a hippogriff
+  7154 | D:7      | Noticed a hippogriff
+  7161 | D:7      | Killed a hippogriff
+  7272 | D:7      | Killed a hippogriff
+  7272 | D:7      | Reached XP level 9. HP: 43/61 MP: 5/18
+  7921 | D:7      | Upgraded the game from 0.19.1 to 0.19.1-1-g22dce08
+  7935 | D:7      | Learned a level 5 spell: Fireball
+  8206 | D:6      | Noticed Sigmund
+  8666 | D:8      | Reached * piety under Vehumet
+  8666 | D:8      | Offered knowledge of Sting by Vehumet.
+  8670 | D:8      | Learned a level 1 spell: Sting
+  9074 | D:9      | Noticed Erolcha
+  9084 | D:8      | You fall through a shaft!
+  9567 | D:9      | Reached XP level 10. HP: 44/67 MP: 14/21
+  9956 | D:9      | Noticed a hill giant
+  9979 | D:10     | Entered Level 10 of the Dungeon
+ 10075 | D:9      | Killed a hill giant
+ 10075 | D:9      | Offered knowledge of Freeze by Vehumet.
+ 10123 | D:9      | Reached ** piety under Vehumet
+ 10161 | D:10     | Learned a level 1 spell: Freeze
+ 10769 | D:9      | Noticed a brown ugly thing
+ 11014 | D:10     | Found a staircase to the Lair.
+ 11014 | D:10     | Noticed an elephant
+ 11031 | D:10     | Noticed Psyche
+ 11034 | D:10     | Killed Psyche
+ 11092 | D:10     | Offered knowledge of Stone Arrow by Vehumet.
+ 11313 | D:6      | Learned a level 3 spell: Stone Arrow
+ 11535 | D:6      | Reached *** piety under Vehumet
+ 11661 | D:6      | Reached XP level 11. HP: 72/72 MP: 23/23
+ 11831 | D:6      | Reached skill level 1 in Armour
+ 11835 | D:6      | Killed Sigmund
+ 11840 | D:6      | Identified a scroll of acquirement
+ 12239 | D:10     | Offered knowledge of Fulminant Prism by Vehumet.
+ 12270 | D:9      | Learned a level 4 spell: Fulminant Prism
+ 12567 | D:10     | Noticed Urug
+ 12717 | D:10     | Found a shimmering altar of Xom.
+ 12893 | D:11     | Reached skill level 10 in Fire Magic
+ 12916 | D:11     | Noticed a hill giant
+ 12924 | D:11     | Killed a hill giant
+ 12924 | D:11     | Reached **** piety under Vehumet
+ 12972 | D:11     | Found a labyrinth entrance.
+ 12979 | Lab      | Entered a labyrinth
+ 13788 | Lab      | Noticed a minotaur
+ 13794 | Lab      | Killed a minotaur
+ 13800 | Lab      | Got a bound glass ring
+ 13804 | Lab      | Identified the ring "Kufarih" {rC+ Stlth+} (You found it in a labyrinth)
+ 13809 | Lab      | Identified a +4 rod of inaccuracy (14/14) (You found it in a labyrinth)
+ 13810 | Lab      | Identified a +8 rod of inaccuracy (14/14) (You found it in a labyrinth)
+ 14129 | D:10     | Killed an elephant
+ 14209 | Lair:1   | Entered Level 1 of the Lair of Beasts
+ 14321 | Lair:1   | Noticed an elephant
+ 14326 | Lair:1   | Reached skill level 10 in Conjurations
+ 14362 | Lair:1   | Noticed an elephant
+ 14363 | Lair:1   | Reached XP level 12. HP: 80/80 MP: 25/25
+ 14364 | Lair:1   | Noticed Prince Ribbit
+ 14570 | D:10     | Reached skill level 10 in Spellcasting
+ 14746 | D:10     | Offered knowledge of Lightning Bolt by Vehumet.
+ 14867 | D:10     | Killed Urug
+ 14933 | D:10     | Found a staircase to the Orcish Mines.
+ 14942 | Orc:1    | Entered Level 1 of the Orcish Mines
+ 14942 | Orc:1    | Noticed Snorg
+ 14999 | Lair:1   | Killed Prince Ribbit
+ 15255 | D:11     | Found Usolan's Magic Scroll Emporium.
+ 15299 | D:11     | Noticed an unseen horror
+ 15301 | D:11     | Killed an unseen horror
+ 16477 | Lair:1   | Noticed Grum
+ 16483 | Lair:1   | Killed Grum
+ 16874 | Lair:2   | Reached XP level 13. HP: 85/85 MP: 28/28
+ 17025 | Lair:2   | Noticed Sonja
+ 17194 | Lair:2   | Found a staircase to the Snake Pit.
+ 17259 | Lair:2   | Reached ***** piety under Vehumet
+ 17319 | Lair:2   | Offered knowledge of Ozocubu's Refrigeration by Vehumet.
+ 17356 | Lair:2   | Killed Sonja
+ 17438 | Lair:2   | Noticed Erica
+ 17440 | Lair:2   | Killed Erica
+ 17856 | Lair:2   | Learned a level 3 spell: Regeneration
+ 18536 | Lair:3   | Found a staircase to the Shoals.
+ 19097 | Lair:3   | Noticed Gastronok
+ 19303 | Lair:3   | Killed Gastronok
+ 20934 | Lair:5   | Reached XP level 14. HP: 91/91 MP: 23/30
+ 21292 | Lair:5   | Noticed an entropy weaver
+ 21293 | Lair:5   | Noticed an entropy weaver
+ 21325 | Lair:5   | Killed an entropy weaver
+ 21906 | Lair:6   | Entered Level 6 of the Lair of Beasts
+ 21988 | Lair:5   | Killed an entropy weaver
+ 22289 | Lair:6   | Found a staircase to the Slime Pits.
+ 22430 | Lair:6   | Found a runed door.
+ 22938 | Lair:6   | Paralysed by a hornet for 2 turns
+ 23184 | Lair:6   | Offered knowledge of Bolt of Draining by Vehumet.
+ 23218 | Lair:6   | Learned a level 5 spell: Bolt of Draining
+ 25208 | Lair:6   | Offered knowledge of Bolt of Fire by Vehumet.
+ 25216 | Lair:6   | Learned a level 6 spell: Bolt of Fire
+ 25614 | Lair:6   | Reached XP level 15. HP: 98/98 MP: 27/32
+ 27756 | D:13     | Found Camiloq's Weapon Shoppe.
+ 28084 | D:13     | Offered knowledge of Orb of Destruction by Vehumet.
+ 29356 | Orc:1    | Killed Snorg
+ 30174 | Orc:2    | Entered Level 2 of the Orcish Mines
+ 30386 | Orc:2    | Found a frozen archway.
+ 30527 | IceCv    | Entered an ice cave
+ 30754 | IceCv    | Got a shimmering pewter amulet
+ 30807 | IceCv    | Identified the amulet of Jugaot {RegenMP Int+3} (You found it in an ice cave)
+ 30990 | Orc:2    | Reached skill level 15 in Spellcasting
+ 31255 | Orc:2    | Found a staircase to the Elven Halls.
+ 31748 | Orc:2    | Reached XP level 16. HP: 104/104 MP: 28/35
+ 31770 | Orc:1    | Learned a level 7 spell: Orb of Destruction
+ 31936 | Orc:2    | Reached skill level 15 in Conjurations
+ 31936 | Orc:2    | Offered knowledge of Poisonous Cloud by Vehumet.
+ 32242 | Orc:2    | Found Zeluv's Magic Scroll Emporium.
+ 32242 | Orc:2    | Found Dicwal's Assorted Antiques.
+ 32245 | Orc:2    | Found Nuax's Assorted Antiques.
+ 32245 | Orc:2    | Found Gewnoh's Antique Armour Shop.
+ 32266 | Orc:2    | Bought a pair of embroidered boots for 409 gold pieces
+ 32319 | Orc:2    | Bought an engraved book for 420 gold pieces
+ 32319 | Orc:2    | Identified the Papyrus of Black Rituals (You bought it in a shop on level 2 of the Orcish Mines)
+ 32321 | Orc:2    | Bought a faintly glowing leather armour for 273 gold pieces
+ 32331 | Orc:2    | Identified the +2 leather armour of Wisdom {Str+2} (You bought it in a shop on level 2 of the Orcish Mines)
+ 32350 | Orc:2    | Bought a scroll of blinking for 210 gold pieces
+ 32648 | D:7      | Bought a runed buckler for 315 gold pieces
+ 32817 | Snake:1  | Entered Level 1 of the Snake Pit
+ 33323 | Snake:1  | Gained mutation: You expend magic power (3 MP) to strengthen your wands. [mutagenic meat]
+ 33324 | Snake:1  | Gained mutation: Your magical capacity is low. (-10% MP) [mutagenic meat]
+ 33325 | Snake:1  | Lost mutation: You expend magic power (3 MP) to strengthen your wands. [mutagenic meat]
+ 33326 | Snake:1  | Gained mutation: You are dopey. (Int -2) [mutagenic meat]
+ 33331 | Snake:1  | Found a basalt altar of Yredelemnul.
+ 33684 | Shoals:1 | Entered Level 1 of the Shoals
+ 34179 | Snake:2  | Noticed Donald
+ 35421 | Snake:2  | HP: 3/104 [shock serpent/bolt of electricity (19)]
+ 35422 | Snake:2  | Killed from afar by a shock serpent
+
+Skill      XL: |  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 |
+---------------+-------------------------------------------------+-----
+Fire Magic     |        4        5     6  8  9 10 11 12 13       | 13.5
+Spellcasting   |           3     4     6  7  8  9 11 12 13 15 16 | 16.0
+Conjurations   |              2  3  4  5  6  8 10 11 12 13 14 16 | 16.4
+Fighting       |                    1        2           3       |  3.4
+Armour         |                                2                |  2.9
+Stealth        |                                3     4          |  4.4
+Dodging        |                                         3       |  3.4
+
+Action                   |  1- 3 |  4- 6 |  7- 9 | 10-12 | 13-15 | 16-18 || total
+-------------------------+-------+-------+-------+-------+-------+-------++-------
+Melee: Unarmed           |     5 |       |       |       |       |       ||     5
+       Dagger            |    35 |    53 |    55 |    10 |       |       ||   153
+       Headbutt          |       |       |     6 |       |     2 |       ||     8
+       Staff             |       |       |       |     2 |     7 |       ||     9
+ Cast: Flame Tongue      |    28 |    56 |   125 |    18 |    13 |       ||   240
+       Throw Flame       |     4 |    45 |   133 |   176 |   307 |    37 ||   702
+       Conjure Flame     |       |     1 |     4 |    19 |     4 |       ||    28
+       Sticky Flame      |       |       |    10 |    25 |    64 |     5 ||   104
+       Sting             |       |       |    20 |    20 |       |       ||    40
+       Fireball          |       |       |     1 |    67 |    61 |    12 ||   141
+       Freeze            |       |       |       |     8 |       |       ||     8
+       Stone Arrow       |       |       |       |    66 |   355 |    31 ||   452
+       Regeneration      |       |       |       |       |     1 |       ||     1
+       Bolt of Fire      |       |       |       |       |    82 |   109 ||   191
+       Bolt of Draining  |       |       |       |       |     6 |     8 ||    14
+       Orb of Destructio |       |       |       |       |       |     3 ||     3
+  Use: Scroll            |       |     6 |     2 |    12 |     9 |     1 ||    30
+       Potion            |       |     2 |     6 |     1 |       |     1 ||    10
+ Stab: Sleeping          |     9 |     6 |     2 |       |       |       ||    17
+  Eat: Chunk             |     1 |    11 |    16 |    27 |    53 |    24 ||   132
+       Bread ration      |       |       |     1 |       |     2 |     1 ||     4
+       Meat ration       |       |       |       |     2 |     1 |       ||     3
+       Fruit             |       |       |       |       |     1 |     7 ||     8
+Armor: Robe              |    11 |    23 |    13 |     1 |       |     3 ||    51
+       Troll leather arm |       |       |       |     6 |    14 |       ||    20
+Dodge: Dodged            |    21 |    55 |    85 |    39 |    57 |    15 ||   272
+Block: Buckler           |       |       |       |       |       |     2 ||     2
+

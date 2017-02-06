@@ -34,18 +34,21 @@ class MorgueCollector(object):
                 - XXX: what does this look like for non-core tables?
             - append to the appropriate key in the store
         """
-        df = self.gameframe()
-        cols = df.columns
-        table_to_cols = {'games': None} # Games gets all the leftovers
-        for (prefix, table) in schema.PREFIX_TO_SIDE_TABLE.iteritems():
-            table_to_cols[table] = [col for col in cols if col.startswith(prefix)]
-        # TODO: Update df loading code.
-        # TODO: May want to actually specify some data columns later so we can
-        # use hdf to apply some simple where conditions when loading a frame
-        # (e.g. filtering by bot is a useful one, or if we add a derived column
-        # for 'legitness')
-        store.append_to_multiple(table_to_cols, df, 'games', data_columns=[])
-        self.game_rows = []
+        # If we've accumulated any game data since the last flush, append it
+        if self.game_rows: 
+            df = self.gameframe()
+            self._lastflushed_id = self.gid - 1 
+            cols = df.columns
+            table_to_cols = {'games': None} # Games gets all the leftovers
+            for (prefix, table) in schema.PREFIX_TO_SIDE_TABLE.iteritems():
+                table_to_cols[table] = [col for col in cols if col.startswith(prefix)]
+            # TODO: Update df loading code.
+            # TODO: May want to actually specify some data columns later so we can
+            # use hdf to apply some simple where conditions when loading a frame
+            # (e.g. filtering by bot is a useful one, or if we add a derived column
+            # for 'legitness')
+            store.append_to_multiple(table_to_cols, df, 'games', data_columns=[])
+            self.game_rows = []
     
         # Players. (Might just be better off pickling a dict or something?)
         if final:
@@ -72,8 +75,14 @@ class MorgueCollector(object):
 
 
     def gameframe(self):
+        """Return a dataframe with currently accumulated per-game data (since
+        last flush). This is a cleaned/categorized version of the dict representation,
+        which includes columns that will get partitioned into 'side tables' (e.g. skill_*),
+        so its columns are a superset of the core 'games' table that's ultimately stored
+        in hdf5."""
+        offset = self._lastflushed_id + 1
         frame = pd.DataFrame(self.game_rows, 
-                index=range(self._lastflushed_id+1, len(self.game_rows))
+                index=range(offset, offset+len(self.game_rows))
         )
         for intcol in {'nrunes', 'gold_spent', 'gold_collected'}:
             frame[intcol].fillna(0, inplace=1)
@@ -87,8 +96,24 @@ class MorgueCollector(object):
         # Specifying the full set of possible categories here turns out to be 
         # pretty important because pandas pitches a fit if you try to append
         # dataframes whose columns have different category values.
+        # TODO: be more defensive about NaNing invalid column values. For some
+        # columns, it should never happen.
         for col, cats in crawl_data.COLUMN_TO_CATEGORIES.iteritems():
+            nulls0 = frame[col].isnull().sum()
             frame[col] = frame[col].astype('category', categories=cats)
+            nulls1 = frame[col].isnull().sum()
+            if nulls1 != nulls0:
+                print ("~~~~~~WARNING~~~~~\nWent from {} null values to {} "
+                        + "after converting column {} to category.\n~~~~~~~").format(
+                                nulls0, nulls1, col)
+        for col, cats in crawl_data.COLUMN_TO_ORDERED_CATEGORIES.iteritems():
+            nulls0 = frame[col].isnull().sum()
+            frame[col] = frame[col].astype('category', categories=cats, ordered=True)
+            nulls1 = frame[col].isnull().sum()
+            if nulls1 != nulls0:
+                print ("~~~~~~WARNING~~~~~\nWent from {} null values to {} "
+                        + "after converting column {} to category.\n~~~~~~~").format(
+                                nulls0, nulls1, col)
 
         versions = [0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20]
         frame['version'] = frame['version'].astype("category", categories=versions,

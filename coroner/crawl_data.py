@@ -54,7 +54,7 @@ def lookup_fancy_god_name(name):
         return 'xom'
     parts = name.split()
     if parts[0] in GODS:
-        return name[0]
+        return parts[0]
     if parts[0] in RENAMED_GODS:
         return RENAMED_GODS[parts[0]]
     binomial = ' '.join(parts[:2])
@@ -112,7 +112,11 @@ COLUMN_TO_CATEGORIES = {
     'god':          _god_cats,
     'first_conversion': _god_cats,
     'wheredied':    CANON_WD,
-    'hunger':       HUNGER_LINES,
+    'hunger':       HUNGER_LINES.values(),
     'howdied':      CANON_HOWDIED,
 }
 
+COLUMN_TO_ORDERED_CATEGORIES = {
+    'whereconverted':   ['d:1', 'd:2', 'd:3', 'd:4', 'd:5', 'd:6', 'd:7', 'd:8', 'd:9', 
+        'temple', 'other']
+}

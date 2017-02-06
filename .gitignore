@@ -1,7 +1,6 @@
 .ipynb_checkpoints
 *.pyc
-*.swp
-*.tmp
 *.h5
 badmorgue.txt
-morguefiles/
+known_bots.txt
+badmorgues/
