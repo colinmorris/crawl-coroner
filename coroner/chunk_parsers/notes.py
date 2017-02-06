@@ -79,7 +79,7 @@ class NotesParser(ChunkParser):
                 yield 'whereconverted', where
 
             # Got a rune?
-            m = re.match('got a (\w+) rune of zot', note)
+            m = re.match('got an? (\w+) rune of zot', note)
             if m:
                 morgue.addrow(
                     # Use 1-based indexing
