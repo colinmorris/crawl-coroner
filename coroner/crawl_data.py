@@ -102,21 +102,17 @@ RUNES = {
         'serpentine', 'silver', 'slimy',
 }
 
-# We use a dedicated category value for atheists to simplify analysis (and to
-# make it clear that this represents "no god" not "unknown/missing god")
-_god_cats = GODS.union({'none'})
-
-COLUMN_TO_CATEGORIES = {
-    'bg':           CANON_BGS,
-    'species':      CANON_SPECIES,
-    'god':          _god_cats,
-    'first_conversion': _god_cats,
-    'wheredied':    CANON_WD,
-    'hunger':       HUNGER_LINES.values(),
-    'howdied':      CANON_HOWDIED,
+GROUPED_SKILLS = {
+    'melee': {'fighting', 'short blades', 'long blades', 'axes', 'maces & flails',
+              'polearms', 'staves', 'unarmed combat',},
+    'ranged': {'bows', 'crossbows', 'slings', 'throwing'},
+    'defense': {'armour', 'dodging', 'shields'},
+    'magic': {'spellcasting', 'conjurations', 'hexes', 'charms', 'summonings',
+                'necromancy', 'translocations', 'transmutations', 'fire magic',
+                'ice magic', 'air magic', 'earth magic', 'poison magic'},
+    'misc': {'invocations', 'evocations', 'stealth'},
 }
 
-COLUMN_TO_ORDERED_CATEGORIES = {
-    'whereconverted':   ['d:1', 'd:2', 'd:3', 'd:4', 'd:5', 'd:6', 'd:7', 'd:8', 'd:9', 
-        'temple', 'other']
-}
+CURRENT_SKILLS = set.union(*map(set, GROUPED_SKILLS.values()))
+
+

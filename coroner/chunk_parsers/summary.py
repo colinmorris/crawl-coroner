@@ -5,7 +5,6 @@ from .. import crawl_data
 from ..coroner_exceptions import *
 
 class SummaryParser(ChunkParser):
-    order = 1
     topline_re = re.compile('(?P<score>\d+) (?P<name>[^ ]*) .*\(level (?P<level>\d+),')
     @classmethod
     def interested(kls, chunk):
