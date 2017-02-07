@@ -41,6 +41,9 @@ COLUMN_TO_CATEGORIES = {
     'skill_progression': {
         'skill':        CURRENT_SKILLS, 
     },
+    'mutations': {
+        'source': MUTATION_SOURCES,
+    },
 }
 
 COLUMN_TO_ORDERED_CATEGORIES = {
@@ -55,7 +58,6 @@ COLUMN_TO_ORDERED_CATEGORIES = {
 
 # Turn these into categories, using all distinct extant values. Dangerous!
 BLIND_CATEGORY_COLUMNS = {
-    'mutations': {'source'},
 }
 
 FILL_COLUMNS = {
