@@ -3,6 +3,9 @@ Some questions I'd like to be able to answer with the data. (These are helpful i
 > prefix -> this is implementable with currently parsed data
 >> implemented in notebook
 
+where do good/great players die?
+    is vaults 5 disproportionately more deadly for newbs than expert players?
+
 > gold earned/spent (scatterplot).
     hypothesis: more skilled players are more liberal about spending their gold.
 
