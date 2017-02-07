@@ -58,6 +58,7 @@ class MorgueCollector(object):
             for table in self.tables_to_rows:
                 df = self.ancillary_frame(table)
                 store.append(table, df)
+            self.tables_to_rows = defaultdict(list)
 
     def clean_frame(self, df, table):
         for col, fillval in schema.FILL_COLUMNS.get(table, {}).items():
