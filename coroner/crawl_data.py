@@ -115,4 +115,34 @@ GROUPED_SKILLS = {
 
 CURRENT_SKILLS = set.union(*map(set, GROUPED_SKILLS.values()))
 
+_MUTAGENIC_MONSTERS = {
+    'an orb of fire', 'a neqoxec', 'a cacodemon', 'a shining eye'
+}
+_GOD_MUTATION_SOURCES = {
+    "xom's mischief", "xom's grace", "jiyva's grace", "jiyva's power",
+    "the severe capriciousness of xom", "ru sacrifice",
+}
+
+# This doesn't cover all possibilities, but it should encompass most of them
+MUTATION_SOURCES = set.union({
+    'mutagenic meat', 'potion of mutation', 'demonic ancestry',
+    'potion of cure mutation',
+    'wand of polymorph other',
+    'species',
+    'other',
+}, _MUTAGENIC_MONSTERS, _GOD_MUTATION_SOURCES)
+
+
+
+def canonical_mutation_source(src):
+    if src in MUTATION_SOURCES:
+        return src
+    if src == 'demonic ancestry':
+        return 'species'
+    tokens = src.split()
+    if (len(tokens) > 1 
+            and tokens[-1] == 'growth' 
+            and ' '.join(tokens[:-1]) in CANON_SPECIES):
+        return 'species'
+    return 'other'
 

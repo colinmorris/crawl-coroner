@@ -89,12 +89,7 @@ class NotesParser(ChunkParser):
         # Not going to try to correct for it for now.
         m = re.match('(gained|lost) mutation:.*\[(.*)\]$', note.text)
         if m:
-            source = m.group(2)
-            # Trying to avoid allowing a huge number of categories in here. 
-            # One source of a lot of variation is "unique x/wand of polymorph other"
-            if 'wand of polymorph other' in source:
-                source = 'wand of polymorph other'
-            # May also want to collapse together different species intrinsics
+            source = crawl_data.canonical_mutation_source(m.group(2))
             yield ('mutations', 
                     {'gained': m.group(1)=='gained', 'source': source, 'turn': note.turn}
                   )
