@@ -89,6 +89,9 @@ class NotesParser(ChunkParser):
         # Not going to try to correct for it for now.
         m = re.match('(gained|lost) mutation:.*\[(.*)\]$', note.text)
         if m:
+            # TODO: Looking at latest parsed data, there are 0 rows for "wand of
+            # polymorph other". And "other" is 3rd most common source. Should 
+            # look into tightening up canonicalization rules.
             source = crawl_data.canonical_mutation_source(m.group(2))
             yield ('mutations', 
                     {'gained': m.group(1)=='gained', 'source': source, 'turn': note.turn}
