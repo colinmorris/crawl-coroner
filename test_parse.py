@@ -30,6 +30,7 @@ morgue_to_expected = {
             hp=-15, maxhp=104,
             turns=35422,
             wheredied='snake pit',
+            depth=2,
             hunger='not hungry',
             visited_labyrinth=True,
             # TODO: I can't actually specify a few keys with kwargs syntax
@@ -60,6 +61,7 @@ morgue_to_expected = {
             maxhp=50,
             turns=7148,
             wheredied='dungeon',
+            depth=3,
             hunger='not hungry',
             gold_collected=280,
             skill_fighting=2.0, skill_axes=6.4, 

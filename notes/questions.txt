@@ -3,6 +3,16 @@ Some questions I'd like to be able to answer with the data. (These are helpful i
 > prefix -> this is implementable with currently parsed data
 >> implemented in notebook
 
+are low-winrate players more likely to use automatic skill point distribution?
+
+where do players get stuck?
+    looking at players with a lot of games played and 0/few wins, is there a pattern 
+    to where they're topping out? e.g. they keep dying in the lair, or vaults 5, or 
+    getting their first rune, or whatever.
+
+where do good/great players die?
+    is vaults 5 disproportionately more deadly for newbs than expert players?
+
 > gold earned/spent (scatterplot).
     hypothesis: more skilled players are more liberal about spending their gold.
 
@@ -30,6 +40,14 @@ consumable usage
     at what rate do players die while having blink scrolls, tele scrolls, heal wounds, etc.
         in their inventory?
     do skilled players identify their consumables earlier in the game?
+
+enchanting weapons/armour
+    are more skilled players more liberal with their enchant scrolls? i.e. is it
+    a newbie trap to hold on to enchant scrolls waiting for that perfect item to
+    use them on, only to die before finding it?
+
+is trying to kill everything you come across a newbie trap? i.e. are more skilled players
+more likely to put an exclusion on a tough monster and return to it later?
 
 per-player questions...
     how many players are monomaniacs wrt the species/bgs they play? 

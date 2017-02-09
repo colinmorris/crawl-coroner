@@ -4,6 +4,7 @@ To parse:
     - entering significant places (new branch, rune vault), and level
       at which that happens, and turncount
     - action table!
+    - skill training +/-/*
 
 your foo enters the passage of golubria
 
