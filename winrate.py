@@ -1,5 +1,5 @@
 
-def smoothed_winrate(df, C=10):
+def smoothed_winrate(df, C=30):
     """Given a games dataframe, return a similarly-indexed Series with smoothed
     winrates.
     """
