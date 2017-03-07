@@ -5,6 +5,12 @@ Some questions I'd like to be able to answer with the data. (These are helpful i
 
 are low-winrate players more likely to use automatic skill point distribution?
 
+stealth investment, newbs vs. pros
+
+how often do characters (esp. DDs) worship Makhleb JUST for the healing? i.e. 
+    no investment in invocations, no/few casts of destruction/summoning abilities
+    (I totally did this on my first DD char)
+
 where do players get stuck?
     looking at players with a lot of games played and 0/few wins, is there a pattern 
     to where they're topping out? e.g. they keep dying in the lair, or vaults 5, or 
