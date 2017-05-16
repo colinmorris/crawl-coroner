@@ -12,6 +12,9 @@ def load_store():
     return _STORE
 
 def load_games(legit=True, extra_tables=[], n=None):
+    """extra_tables should be a subset of 
+        [branches, portal_vaults, skills]
+    """
     global _STORE
     where = 'legit==True' if legit else None
     if _STORE is None:

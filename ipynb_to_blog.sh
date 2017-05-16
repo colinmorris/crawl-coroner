@@ -2,8 +2,22 @@
 
 if [[ $# -lt 3 ]]
 then
-    echo "usage: $0 ipynb_file slug title"
+    echo "usage: $0 ipynb_file slug title mathjax?"
     exit 1
+fi
+
+if [[ $# -eq 4 ]]
+then
+mathjax=$(cat << EOF
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\\(','\\\)']]}
+  });
+  </script>
+  <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+  </script>
+EOF
+)
 fi
 
 dest=~/src/colinmorris.github.com
@@ -17,6 +31,7 @@ cat - ${stem}.html << EOF | sponge ${stem}.html
 layout: notebook-post
 title: "$3"
 ---
+$mathjax
 EOF
 
 mv ${stem}.html ${dest}/_posts/`date -I`-${slug}.html
