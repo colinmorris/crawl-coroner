@@ -28,8 +28,9 @@ jupyter nbconvert --Application.output_files_dir=${slug} --config nbconvert_html
 sed -i "s/src=\"${slug}/src=\"\/assets\/${slug}/" ${stem}.html
 cat - ${stem}.html << EOF | sponge ${stem}.html
 ---
-layout: notebook-post
+layout: dcss-post
 title: "$3"
+tags: [dcss]
 ---
 $mathjax
 EOF
